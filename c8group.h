@@ -1,4 +1,4 @@
-/** c8expr - expression statement
+/** c8group - group statement
  *
  * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
  *
@@ -20,14 +20,14 @@
 
 #pragma once
 
-struct c8expr;
+struct c8group;
 struct c8stmt;
 
 /** Safe cast from c8stmt
  */
-struct c8expr* to_c8expr(struct c8stmt* o);
+struct c8group* to_c8group(struct c8stmt* o);
 
-/** Create a c8expr statement
+/** Create a c8group statement
  */
-struct c8expr* c8expr_create(const char* expr);
+struct c8group* c8group_create();
 

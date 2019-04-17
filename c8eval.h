@@ -1,4 +1,4 @@
-/** c8expr - expression statement
+/** c8eval - expression evaluator
  *
  * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
  *
@@ -20,14 +20,22 @@
 
 #pragma once
 
-struct c8expr;
-struct c8stmt;
+struct c8eval;
+struct c8ctx;
+struct c8obj;
 
-/** Safe cast from c8stmt
+/** Create an expression evaluator
  */
-struct c8expr* to_c8expr(struct c8stmt* o);
+struct c8eval* c8eval_create(struct c8ctx* global);
 
-/** Create a c8expr statement
+/** Destroy an expression evaluator
  */
-struct c8expr* c8expr_create(const char* expr);
+void c8eval_destroy(struct c8eval* o);
 
+/** Evaluate an expression
+ */
+struct c8obj* c8eval_expr(struct c8eval* o, const char* expr);
+
+/** Set local context
+ */
+void c8eval_set_local(struct c8eval* o, struct c8ctx* local);

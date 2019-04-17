@@ -22,26 +22,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-int main(int argc, char* argv[])
+const char* CR = "\n";
+const char* null = "null\n";
+
+void evaluate(const char* line)
 {
   struct c8ctx* ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);
   struct c8expr* expr = c8expr_create(ctx);
 
-  struct c8obj* r = c8expr_eval(expr, "2^100");
+  struct c8obj* r = c8expr_eval(expr, line);
   if (r) {
     struct c8buf rs; c8buf_init(&rs);
     c8obj_str(r, &rs, C8_FMT_DEC);
-    printf("%s\n", c8buf_str(&rs));
+    write(fileno(stdout), c8buf_str(&rs), c8buf_len(&rs));
+    write(fileno(stdout), CR, strlen(CR));
     c8buf_clear(&rs);
     c8obj_unref(r);
   } else {
-    printf("null\n");
+    write(fileno(stdout), null, strlen(null));
   }
 
   c8expr_destroy(expr);
   c8ctx_destroy(ctx);
+}
+
+int main(int argc, char* argv[])
+{
   return 0;
 }

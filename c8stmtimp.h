@@ -1,4 +1,4 @@
-/** c8expr - expression statement
+/** c8stmtimp - statement implementation
  *
  * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
  *
@@ -20,14 +20,31 @@
 
 #pragma once
 
-struct c8expr;
 struct c8stmt;
+struct c8obj;
+struct c8script;
 
-/** Safe cast from c8stmt
- */
-struct c8expr* to_c8expr(struct c8stmt* o);
+typedef void (*c8stmt_destroy_func)
+(struct c8stmt* o);
 
-/** Create a c8expr statement
- */
-struct c8expr* c8expr_create(const char* expr);
+typedef int (*c8stmt_parse_func)
+(struct c8stmt* o, struct c8script* script, const char* token);
+
+typedef int (*c8stmt_parse_mode_func)
+(struct c8stmt* o);
+
+typedef struct c8obj* (*c8stmt_run_func)
+(struct c8stmt* o, struct c8script* script, int* flow);
+
+struct c8stmt_imp {
+  c8stmt_destroy_func destroy;
+  c8stmt_parse_func parse;
+  c8stmt_parse_mode_func parse_mode;
+  c8stmt_run_func run;
+};
+
+struct c8stmt {
+  const struct c8stmt_imp* imp;
+  struct c8stmt* parent;
+};
 

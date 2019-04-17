@@ -23,61 +23,62 @@
 #include <string.h>
 
 #define RET_IF_OP(pattern,op) if (strcmp(str,pattern)==0) return op;
+#define RET_IF_EQUAL(str,val,ret) if (strcmp(str,val)==0) return ret;
 
 int c8ops_binary(const char* str)
 {
-  RET_IF_OP(",",  C8_OP_SEQUENTIAL);
-  RET_IF_OP(":",  C8_OP_RESOLVE);
-  RET_IF_OP("=",  C8_OP_ASSIGN);
-  RET_IF_OP("+=", C8_OP_ADD_ASSIGN);
-  RET_IF_OP("-=", C8_OP_SUBTRACT_ASSIGN);
-  RET_IF_OP("*=", C8_OP_MULTIPLY_ASSIGN);
-  RET_IF_OP("/=", C8_OP_DIVIDE_ASSIGN);
-  RET_IF_OP("||", C8_OP_LOGIC_OR);
-  RET_IF_OP("&&", C8_OP_LOGIC_AND);
-  RET_IF_OP("|",  C8_OP_BIT_OR);
-  RET_IF_OP("&",  C8_OP_BIT_AND);
-  RET_IF_OP("xor", C8_OP_BIT_XOR);
-  RET_IF_OP("<<", C8_OP_SHIFT_LEFT);
-  RET_IF_OP(">>", C8_OP_SHIFT_RIGHT);
-  RET_IF_OP("==", C8_OP_EQUALITY);
-  RET_IF_OP("!=", C8_OP_INEQUALITY);
-  RET_IF_OP(">",  C8_OP_GREATER);
-  RET_IF_OP("<",  C8_OP_LESS);
-  RET_IF_OP(">=", C8_OP_GREATER_OR_EQUAL);
-  RET_IF_OP("<=", C8_OP_LESS_OR_EQUAL);
-  RET_IF_OP("+",  C8_OP_ADD);
-  RET_IF_OP("-",  C8_OP_SUBTRACT);
-  RET_IF_OP("*",  C8_OP_MULTIPLY);
-  RET_IF_OP("/",  C8_OP_DIVIDE);
-  RET_IF_OP("%",  C8_OP_MODULUS);
-  RET_IF_OP("^",  C8_OP_POWER);
-  RET_IF_OP("[",  C8_OP_SUBSCRIPT);
-  RET_IF_OP("]",  C8_OP_SUBSCRIPT_END);
-  RET_IF_OP("(",  C8_OP_LIST);
-  RET_IF_OP(")",  C8_OP_LIST_END);
-  RET_IF_OP("{",  C8_OP_MAP);
-  RET_IF_OP("}",  C8_OP_MAP_END);
-  RET_IF_OP(".",  C8_OP_LOOKUP);
+  RET_IF_EQUAL(str, ",",  C8_OP_SEQUENTIAL);
+  RET_IF_EQUAL(str, ":",  C8_OP_RESOLVE);
+  RET_IF_EQUAL(str, "=",  C8_OP_ASSIGN);
+  RET_IF_EQUAL(str, "+=", C8_OP_ADD_ASSIGN);
+  RET_IF_EQUAL(str, "-=", C8_OP_SUBTRACT_ASSIGN);
+  RET_IF_EQUAL(str, "*=", C8_OP_MULTIPLY_ASSIGN);
+  RET_IF_EQUAL(str, "/=", C8_OP_DIVIDE_ASSIGN);
+  RET_IF_EQUAL(str, "||", C8_OP_LOGIC_OR);
+  RET_IF_EQUAL(str, "&&", C8_OP_LOGIC_AND);
+  RET_IF_EQUAL(str, "|",  C8_OP_BIT_OR);
+  RET_IF_EQUAL(str, "&",  C8_OP_BIT_AND);
+  RET_IF_EQUAL(str, "xor", C8_OP_BIT_XOR);
+  RET_IF_EQUAL(str, "<<", C8_OP_SHIFT_LEFT);
+  RET_IF_EQUAL(str, ">>", C8_OP_SHIFT_RIGHT);
+  RET_IF_EQUAL(str, "==", C8_OP_EQUALITY);
+  RET_IF_EQUAL(str, "!=", C8_OP_INEQUALITY);
+  RET_IF_EQUAL(str, ">",  C8_OP_GREATER);
+  RET_IF_EQUAL(str, "<",  C8_OP_LESS);
+  RET_IF_EQUAL(str, ">=", C8_OP_GREATER_OR_EQUAL);
+  RET_IF_EQUAL(str, "<=", C8_OP_LESS_OR_EQUAL);
+  RET_IF_EQUAL(str, "+",  C8_OP_ADD);
+  RET_IF_EQUAL(str, "-",  C8_OP_SUBTRACT);
+  RET_IF_EQUAL(str, "*",  C8_OP_MULTIPLY);
+  RET_IF_EQUAL(str, "/",  C8_OP_DIVIDE);
+  RET_IF_EQUAL(str, "%",  C8_OP_MODULUS);
+  RET_IF_EQUAL(str, "^",  C8_OP_POWER);
+  RET_IF_EQUAL(str, "[",  C8_OP_SUBSCRIPT);
+  RET_IF_EQUAL(str, "]",  C8_OP_SUBSCRIPT_END);
+  RET_IF_EQUAL(str, "(",  C8_OP_LIST);
+  RET_IF_EQUAL(str, ")",  C8_OP_LIST_END);
+  RET_IF_EQUAL(str, "{",  C8_OP_MAP);
+  RET_IF_EQUAL(str, "}",  C8_OP_MAP_END);
+  RET_IF_EQUAL(str, ".",  C8_OP_LOOKUP);
   return C8_OP_UNKNOWN;
 }
 
 int c8ops_prefix(const char* str)
 {
-  RET_IF_OP("+",  C8_OP_POSITIVE);
-  RET_IF_OP("-",  C8_OP_NEGATIVE);
-  RET_IF_OP("!",  C8_OP_LOGIC_NOT);
-  RET_IF_OP("~",  C8_OP_BIT_NOT);
-  RET_IF_OP("++", C8_OP_PRE_INC);
-  RET_IF_OP("--", C8_OP_PRE_DEC);
+  RET_IF_EQUAL(str, "+",  C8_OP_POSITIVE);
+  RET_IF_EQUAL(str, "-",  C8_OP_NEGATIVE);
+  RET_IF_EQUAL(str, "!",  C8_OP_LOGIC_NOT);
+  RET_IF_EQUAL(str, "~",  C8_OP_BIT_NOT);
+  RET_IF_EQUAL(str, "++", C8_OP_PRE_INC);
+  RET_IF_EQUAL(str, "--", C8_OP_PRE_DEC);
   return C8_OP_UNKNOWN;
 }
 
 int c8ops_postfix(const char* str)
 {
-  RET_IF_OP("!",  C8_OP_FACTORIAL);
-  RET_IF_OP("++", C8_OP_POST_INC);
-  RET_IF_OP("--", C8_OP_POST_DEC);
+  RET_IF_EQUAL(str, "!",  C8_OP_FACTORIAL);
+  RET_IF_EQUAL(str, "++", C8_OP_POST_INC);
+  RET_IF_EQUAL(str, "--", C8_OP_POST_DEC);
   return C8_OP_UNKNOWN;
 }
 

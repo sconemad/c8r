@@ -1,4 +1,4 @@
-/** c8expr - expression statement
+/** c8script - script parser
  *
  * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
  *
@@ -20,14 +20,21 @@
 
 #pragma once
 
-struct c8expr;
+struct c8script;
 struct c8stmt;
+struct c8obj;
+struct c8eval;
 
-/** Safe cast from c8stmt
- */
-struct c8expr* to_c8expr(struct c8stmt* o);
+struct c8script* c8script_create();
 
-/** Create a c8expr statement
- */
-struct c8expr* c8expr_create(const char* expr);
+void c8script_destroy(struct c8script* o);
 
+int c8script_parse(struct c8script* o, const char* script);
+
+struct c8obj* c8script_run(struct c8script* o);
+
+// internal
+
+struct c8stmt* c8script_parse_token(struct c8script* o, const char* token);
+
+struct c8eval* c8script_eval(struct c8script* o);

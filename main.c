@@ -24,13 +24,47 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "c8script.h"
+
+int run_script(const char* file)
+{
+  FILE* f = fopen(file, "r");
+  if (!f) return 1;
+  fseek(f, 0L, SEEK_END);
+  long size = ftell(f);
+  char* data = malloc(size+1);
+  fseek(f, 0L, SEEK_SET);
+  fread(data, 1, size ,f); 
+  fclose(f);
+  data[size] = 0;
+
+  // parse
+  struct c8script* script = c8script_create();
+  int pr = c8script_parse(script, data);
+  printf("c8script_parse: %d\n\n", pr);
+
+  // run
+  struct c8obj* r = c8script_run(script);
+  struct c8buf rs; c8buf_init(&rs);
+  if (r) {
+    c8obj_str(r, &rs, 0);
+  } else {
+    c8buf_append_str(&rs, "null");
+  }
+  printf("c8script_run: %s\n\n", c8buf_str(&rs));
+  c8buf_clear(&rs);
+  c8obj_unref(r);
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
+  if (argc == 2) return run_script(argv[1]);
+
   struct c8buf hf;
   c8buf_init_str(&hf, getenv("HOME"));
   c8buf_append_str(&hf, "/.c8r_history");
   read_history(c8buf_str(&hf));
-  rl_bind_key ('\t', rl_abort);
 
   struct c8ctx* ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
@@ -40,7 +74,7 @@ int main(int argc, char* argv[])
          C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH,
          C8_WEBSITE, C8_COPYRIGHT);
 
-  struct c8expr* expr = c8expr_create(ctx);
+  struct c8eval* eval = c8eval_create(ctx);
   int fmt = C8_FMT_DEC;
 
   while (1) {
@@ -58,7 +92,7 @@ int main(int argc, char* argv[])
     if (f >= 0) { fmt = f; continue; }
     
     add_history(line);
-    struct c8obj* r = c8expr_eval(expr, line);
+    struct c8obj* r = c8eval_expr(eval, line);
     if (r) {
       struct c8buf rs; c8buf_init(&rs);
       c8obj_str(r, &rs, fmt);
@@ -74,7 +108,7 @@ int main(int argc, char* argv[])
   printf("\n");
   write_history(c8buf_str(&hf));
   c8buf_clear(&hf);
-  c8expr_destroy(expr);
+  c8eval_destroy(eval);
   c8ctx_destroy(ctx);
   return 0;
 }
