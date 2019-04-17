@@ -1,1 +1,9 @@
 bld
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+c8r
+libc8.a
+c8version.h
