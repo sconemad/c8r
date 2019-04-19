@@ -22,6 +22,8 @@
 #include "c8stmt.h"
 #include "c8expr.h"
 #include "c8group.h"
+#include "c8cond.h"
+#include "c8loop.h"
 #include "c8obj.h"
 #include "c8eval.h"
 #include "c8buf.h"
@@ -149,14 +151,22 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   int tid = get_tokenid(token); 
   struct c8stmt* s = 0;
   switch (tid) {
-  case C8_PARSETOKEN_IF: s = c8stmt_create_if(); break;
-  case C8_PARSETOKEN_WHILE: s = c8stmt_create_while(); break;
-  case C8_PARSETOKEN_FOR: s = c8stmt_create_for(); break;
-  case C8_PARSETOKEN_RETURN: s = c8stmt_create_flow(C8_FLOW_RETURN); break;
-  case C8_PARSETOKEN_BREAK: s = c8stmt_create_flow(C8_FLOW_LAST); break;
-  case C8_PARSETOKEN_CONTINUE: s = c8stmt_create_flow(C8_FLOW_NEXT); break;
-  case C8_PARSETOKEN_VAR: s = c8stmt_create_decl(); break;
-  case C8_PARSETOKEN_SUB: s = c8stmt_create_sub(); break;
+  case C8_PARSETOKEN_IF: 
+    s = (struct c8stmt*)c8cond_create(); break;
+  case C8_PARSETOKEN_WHILE:
+    s = (struct c8stmt*)c8loop_create(); break;
+  case C8_PARSETOKEN_FOR: 
+    s = (struct c8stmt*)c8loop_create(); break;
+  case C8_PARSETOKEN_RETURN: 
+    s = (struct c8stmt*)0; /*C8_FLOW_RETURN*/ break;
+  case C8_PARSETOKEN_BREAK:
+    s = (struct c8stmt*)0; /*C8_FLOW_LAST*/ break;
+  case C8_PARSETOKEN_CONTINUE:
+    s = (struct c8stmt*)0; /*C8_FLOW_NEXT*/ break;
+  case C8_PARSETOKEN_VAR:
+    s = (struct c8stmt*)0; break;
+  case C8_PARSETOKEN_SUB:
+    s = (struct c8stmt*)0; break;
   case C8_PARSETOKEN_OPEN_BRACE: 
     s = (struct c8stmt*)c8group_create(); break;
   case C8_PARSETOKEN_UNKNOWN: 
@@ -190,7 +200,7 @@ static int next(struct c8script* o)
   int escape = 0; // Was the last char an escape (\)
   int in_comment = 0;
   int in_bracket = 0;
-  int first = 0;
+  //  int first = 0;
 
   for (const char* c=o->pos; *c; ++c) {
     if (pm == C8_PARSEMODE_STATEMENT) {
@@ -229,6 +239,28 @@ static int next(struct c8script* o)
       }
 
     } else if (pm == C8_PARSEMODE_BRACKETED) {
+
+      if (in_quote) {
+	// Ignore everything until (unescaped) end quote
+	if (*c == in_quote && !escape) in_quote = 0;
+	// Check for escape
+	escape = (*c == '\\');
+
+      } else if (*c == '"' || *c == '\'') {
+        in_quote = *c;
+      } else if (*c == '(') {
+        if (in_bracket == 0) {
+          ++o->pos;
+          --len;
+        }
+        ++in_bracket;
+      } else if (*c == ')') {
+        --in_bracket;
+        if (in_bracket == 0) {
+          ++skip;
+          break;
+        }
+      }
       
     } else if (pm == C8_PARSEMODE_NAME) {
 

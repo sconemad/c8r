@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 struct c8expr {
   struct c8stmt base;

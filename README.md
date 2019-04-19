@@ -10,6 +10,7 @@
      - c8expr     // Expression
      - c8group    // Group
      - c8cond     // Conditional
+     - c8loop     // Loop
 
    - c8obj        // Base object
      - c8error    // Error

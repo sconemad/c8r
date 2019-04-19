@@ -10,7 +10,7 @@ configure_file("${PROJECT_SOURCE_DIR}/c8version.h.in"
 include_directories("${PROJECT_BINARY_DIR}")
 
 add_compile_options(-Wall)
-#add_compile_options(-fsanitize=address)
+add_compile_options(-fsanitize=address)
 #add_compile_options(-O0)
 #add_compile_options(-g)
 
@@ -47,6 +47,7 @@ endif()
 add_library(c8
   c8bool.c
   c8buf.c
+  c8cond.c
   c8ctx.c
   c8error.c
   c8eval.c
@@ -55,6 +56,7 @@ add_library(c8
   c8func.c
   c8group.c
   c8list.c
+  c8loop.c
   c8map.c
   c8mpfr.c
   c8mpz.c

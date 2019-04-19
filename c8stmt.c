@@ -28,23 +28,6 @@
 
 /* c8stmt */
 
-struct c8stmt* c8stmt_create_group()
-{ return 0; }
-struct c8stmt* c8stmt_create_if()
-{ return 0; }
-struct c8stmt* c8stmt_create_while()
-{ return 0; }
-struct c8stmt* c8stmt_create_for()
-{ return 0; }
-struct c8stmt* c8stmt_create_flow()
-{ return 0; }
-struct c8stmt* c8stmt_create_decl()
-{ return 0; }
-struct c8stmt* c8stmt_create_sub()
-{ return 0; }
-
-/* c8stmt */
-
 void c8stmt_destroy(struct c8stmt* o)
 {
   if (!o) return;

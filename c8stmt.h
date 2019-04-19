@@ -24,13 +24,6 @@ struct c8stmt;
 struct c8script;
 struct c8exec;
 
-struct c8stmt* c8stmt_create_if();
-struct c8stmt* c8stmt_create_while();
-struct c8stmt* c8stmt_create_for();
-struct c8stmt* c8stmt_create_flow();
-struct c8stmt* c8stmt_create_decl();
-struct c8stmt* c8stmt_create_sub();
-
 void c8stmt_destroy(struct c8stmt* o);
 
 #define C8_PARSERESULT_CONTINUE 0
