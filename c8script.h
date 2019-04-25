@@ -24,8 +24,9 @@ struct c8script;
 struct c8stmt;
 struct c8obj;
 struct c8eval;
+struct c8ctx;
 
-struct c8script* c8script_create();
+struct c8script* c8script_create(struct c8ctx* global);
 
 void c8script_destroy(struct c8script* o);
 

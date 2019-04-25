@@ -36,6 +36,14 @@ void c8eval_destroy(struct c8eval* o);
  */
 struct c8obj* c8eval_expr(struct c8eval* o, const char* expr);
 
-/** Set local context
+/** Resolver function
  */
-void c8eval_set_local(struct c8eval* o, struct c8ctx* local);
+typedef struct c8obj* (*c8eval_resolver_func)
+(const char* name, void* data);
+
+/** Set resolver
+ */
+void c8eval_set_resolver(struct c8eval* o, c8eval_resolver_func resolver,
+                         void* data);
+
+c8eval_resolver_func c8eval_get_resolver(struct c8eval* o, void** data);

@@ -1,6 +1,6 @@
-/** c8group - group statement
+/** c8flow - flow statement
  *
- * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
+ * Copyright (c) 2019 Andrew Wedgbury <wedge@sconemad.com>
  *
  * This file is part of c8r.
  *
@@ -20,18 +20,14 @@
 
 #pragma once
 
-struct c8group;
+struct c8flow;
 struct c8stmt;
-struct c8ctx;
 
 /** Safe cast from c8stmt
  */
-struct c8group* to_c8group(struct c8stmt* o);
+struct c8flow* to_c8flow(struct c8stmt* o);
 
-/** Create a c8group statement
+/** Create a c8flow statement (see c8stmt for flow modes)
  */
-struct c8group* c8group_create();
+struct c8flow* c8flow_create(int flow);
 
-/** Get the context for this group
- */
-struct c8ctx* c8group_ctx(struct c8group* o);

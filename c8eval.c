@@ -45,7 +45,8 @@
 
 struct c8eval {
   struct c8ctx* global;
-  struct c8ctx* local;
+  c8eval_resolver_func resolver;
+  void* resolver_data;
   const char* pos;
   int type;
   int binary_op;
@@ -321,10 +322,12 @@ static struct c8obj* resolve(struct c8eval* o, const char* name)
   if (strcmp("true", name)==0) return (struct c8obj*)c8bool_create(1);
   if (strcmp("false", name)==0) return (struct c8obj*)c8bool_create(0);
 
-  // Look in local and global contexts
+  // Resolve using supplied resolver function
   struct c8obj* obj = 0;
-  if (o->local) obj = c8ctx_resolve(o->local, name);
+  if (o->resolver) obj = (o->resolver)(name, o->resolver_data);
   if (obj) return obj;
+
+  // Look in global context
   if (o->global) obj = c8ctx_resolve(o->global, name);
   if (obj) return obj;
 
@@ -469,7 +472,8 @@ struct c8eval* c8eval_create(struct c8ctx* global)
   struct c8eval* o = malloc(sizeof(struct c8eval));
   assert(o);
   o->global = global;
-  o->local = 0;
+  o->resolver = 0;
+  o->resolver_data = 0;
   return o;
 }
 
@@ -493,8 +497,17 @@ struct c8obj* c8eval_expr(struct c8eval* o, const char* expr)
   return ro;
 }
 
-void c8eval_set_local(struct c8eval* o, struct c8ctx* local)
+void c8eval_set_resolver(struct c8eval* o, c8eval_resolver_func resolver, 
+                         void* data)
 {
   assert(o);
-  o->local = local;
+  o->resolver = resolver;
+  o->resolver_data = data;
+}
+
+c8eval_resolver_func c8eval_get_resolver(struct c8eval* o, void** data)
+{
+  assert(o);
+  *data = o->resolver_data;
+  return o->resolver;
 }

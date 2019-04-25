@@ -27,7 +27,10 @@ struct c8stmt;
  */
 struct c8loop* to_c8loop(struct c8stmt* o);
 
+#define C8_LOOP_WHILE 0
+#define C8_LOOP_FOR 1
+
 /** Create a c8loop statement
  */
-struct c8loop* c8loop_create();
+struct c8loop* c8loop_create(int type);
 

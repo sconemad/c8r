@@ -24,6 +24,8 @@
 #include "c8group.h"
 #include "c8cond.h"
 #include "c8loop.h"
+#include "c8decl.h"
+#include "c8flow.h"
 #include "c8obj.h"
 #include "c8eval.h"
 #include "c8buf.h"
@@ -46,14 +48,14 @@ struct c8script {
 
 static int next(struct c8script* o);
 
-struct c8script* c8script_create()
+struct c8script* c8script_create(struct c8ctx* global)
 {
   struct c8script* o = malloc(sizeof(struct c8script));
   assert(o);
   c8buf_init(&o->script);
   c8buf_init(&o->token);
   c8vec_init(&o->stack);
-  o->eval = c8eval_create(0);
+  o->eval = c8eval_create(global);
   return o;
 }
 
@@ -154,17 +156,17 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   case C8_PARSETOKEN_IF: 
     s = (struct c8stmt*)c8cond_create(); break;
   case C8_PARSETOKEN_WHILE:
-    s = (struct c8stmt*)c8loop_create(); break;
+    s = (struct c8stmt*)c8loop_create(C8_LOOP_WHILE); break;
   case C8_PARSETOKEN_FOR: 
-    s = (struct c8stmt*)c8loop_create(); break;
+    s = (struct c8stmt*)c8loop_create(C8_LOOP_FOR); break;
   case C8_PARSETOKEN_RETURN: 
-    s = (struct c8stmt*)0; /*C8_FLOW_RETURN*/ break;
+    s = (struct c8stmt*)c8flow_create(C8_FLOW_RETURN); break;
   case C8_PARSETOKEN_BREAK:
-    s = (struct c8stmt*)0; /*C8_FLOW_LAST*/ break;
+    s = (struct c8stmt*)c8flow_create(C8_FLOW_LAST); break;
   case C8_PARSETOKEN_CONTINUE:
-    s = (struct c8stmt*)0; /*C8_FLOW_NEXT*/ break;
+    s = (struct c8stmt*)c8flow_create(C8_FLOW_NEXT); break;
   case C8_PARSETOKEN_VAR:
-    s = (struct c8stmt*)0; break;
+    s = (struct c8stmt*)c8decl_create(); break;
   case C8_PARSETOKEN_SUB:
     s = (struct c8stmt*)0; break;
   case C8_PARSETOKEN_OPEN_BRACE: 
@@ -200,7 +202,7 @@ static int next(struct c8script* o)
   int escape = 0; // Was the last char an escape (\)
   int in_comment = 0;
   int in_bracket = 0;
-  //  int first = 0;
+  int first = 1;
 
   for (const char* c=o->pos; *c; ++c) {
     if (pm == C8_PARSEMODE_STATEMENT) {
@@ -264,9 +266,15 @@ static int next(struct c8script* o)
       
     } else if (pm == C8_PARSEMODE_NAME) {
 
+      if (first) {
+        if (!isalpha(*c)) return 0;
+      } else {
+        if (!isalpha(*c) && !isdigit(*c) && (*c != '_')) break;
+      }
     }
 
     ++len;
+    first = 0;
   }
 
   c8buf_clear(&o->token);

@@ -25,8 +25,10 @@
 #include <readline/history.h>
 
 #include "c8script.h"
+#include "c8ctx.h"
+#include "c8func.h"
 
-int run_script(const char* file)
+int run_script(struct c8ctx* ctx, const char* file)
 {
   FILE* f = fopen(file, "r");
   if (!f) return 1;
@@ -39,7 +41,7 @@ int run_script(const char* file)
   data[size] = 0;
 
   // parse
-  struct c8script* script = c8script_create();
+  struct c8script* script = c8script_create(ctx);
   int pr = c8script_parse(script, data);
   printf("c8script_parse: %d\n\n", pr);
 
@@ -57,19 +59,30 @@ int run_script(const char* file)
   return 0;
 }
 
+struct c8obj* print(struct c8list* args)
+{
+  struct c8obj* a = c8list_at(args, 0);
+  struct c8buf m;
+  c8buf_init(&m);
+  c8obj_str(a, &m, C8_FMT_DEC);
+  printf("%s\n", c8buf_str(&m));
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
-  if (argc == 2) return run_script(argv[1]);
+  struct c8ctx* ctx = c8ctx_create();
+  c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print, 0));
+  c8mpfr_init_ctx(ctx);
+  c8mpz_init_ctx(ctx);
+
+  if (argc == 2) return run_script(ctx, argv[1]);
 
   struct c8buf hf;
   c8buf_init_str(&hf, getenv("HOME"));
   c8buf_append_str(&hf, "/.c8r_history");
   read_history(c8buf_str(&hf));
 
-  struct c8ctx* ctx = c8ctx_create();
-  c8mpfr_init_ctx(ctx);
-  c8mpz_init_ctx(ctx);
-  
   printf("c8r %d.%d.%d / %s\n%s\n\n",
          C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH,
          C8_WEBSITE, C8_COPYRIGHT);

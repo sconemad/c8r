@@ -26,6 +26,9 @@
 #include "c8eval.h"
 #include "c8vec.h"
 #include "c8obj.h"
+#include "c8objimp.h"
+#include "c8ctx.h"
+#include "c8buf.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +38,7 @@
 struct c8group {
   struct c8stmt base;
   struct c8vec vec;
+  struct c8ctx* ctx;
 };
 
 static void c8group_destroy(struct c8stmt* o)
@@ -47,6 +51,7 @@ static void c8group_destroy(struct c8stmt* o)
     c8stmt_destroy(item);
   }
   c8vec_clear(&go->vec);
+  c8ctx_destroy(go->ctx);
   free(go);
 }
 
@@ -75,20 +80,41 @@ static int c8group_parse_mode(struct c8stmt* o)
   return C8_PARSEMODE_STATEMENT;
 }
 
+static struct c8obj* c8group_resolve(const char* name, void* data)
+{
+  struct c8stmt* o = (struct c8stmt*)data;
+  if (!o) return 0;
+  struct c8group* go = to_c8group(o);
+  if (!go) return c8group_resolve(name, o->parent);
+  struct c8obj* ret = c8ctx_resolve(go->ctx, name);
+  if (ret) return ret;
+  return c8group_resolve(name, o->parent);
+}
+
 static struct c8obj* c8group_run(struct c8stmt* o,
 				 struct c8script* script, int* flow)
 {
   struct c8group* go = to_c8group(o);
   assert(go);
   struct c8obj* ret = 0;
+  c8eval_resolver_func save_resolver;
+  void* save_resolver_data;
+
+  struct c8eval* ev = c8script_eval(script);
+  save_resolver = c8eval_get_resolver(ev, &save_resolver_data);
+
   int size = c8vec_size(&go->vec);
   for (int i=0; i<size; ++i) {
     struct c8stmt* item = (struct c8stmt*)c8vec_at(&go->vec, i);
     c8obj_unref(ret);
+
+    c8eval_set_resolver(ev, c8group_resolve, o);
     ret = c8stmt_run(item, script, flow);
+
     if (ret && to_c8error(ret)) break;
     if (*flow != C8_FLOW_NORMAL) break;
   }
+  c8eval_set_resolver(ev, save_resolver, save_resolver_data);
   return ret;
 }
 
@@ -111,5 +137,12 @@ struct c8group* c8group_create(const char* expr)
   go->base.imp = &c8group_imp;
   go->base.parent = 0;
   c8vec_init(&go->vec);
+  go->ctx = c8ctx_create();
   return go;
+}
+
+struct c8ctx* c8group_ctx(struct c8group* o)
+{
+  assert(o);
+  return o->ctx;
 }

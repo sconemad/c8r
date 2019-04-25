@@ -63,7 +63,7 @@ static struct c8obj* c8expr_run(struct c8stmt* o,
 {
   struct c8expr* eo = to_c8expr(o);
   assert(eo);
-  printf("c8expr_run: %s\n", c8buf_str(&eo->expr));
+  //  printf("c8expr_run: %s\n", c8buf_str(&eo->expr));
   struct c8eval* eval = c8script_eval(script);
   return c8eval_expr(eval, c8buf_str(&eo->expr));
 }

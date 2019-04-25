@@ -1,6 +1,6 @@
-/** c8group - group statement
+/** c8decl - declaration statement
  *
- * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
+ * Copyright (c) 2019 Andrew Wedgbury <wedge@sconemad.com>
  *
  * This file is part of c8r.
  *
@@ -20,18 +20,14 @@
 
 #pragma once
 
-struct c8group;
+struct c8decl;
 struct c8stmt;
-struct c8ctx;
 
 /** Safe cast from c8stmt
  */
-struct c8group* to_c8group(struct c8stmt* o);
+struct c8decl* to_c8decl(struct c8stmt* o);
 
-/** Create a c8group statement
+/** Create a c8decl statement
  */
-struct c8group* c8group_create();
+struct c8decl* c8decl_create();
 
-/** Get the context for this group
- */
-struct c8ctx* c8group_ctx(struct c8group* o);

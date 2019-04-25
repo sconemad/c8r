@@ -49,10 +49,11 @@ add_library(c8
   c8buf.c
   c8cond.c
   c8ctx.c
+  c8decl.c
   c8error.c
   c8eval.c
   c8expr.c
-  c8func.c
+  c8flow.c
   c8func.c
   c8group.c
   c8list.c

@@ -9,8 +9,9 @@
    - c8stmt       // Base statement
      - c8expr     // Expression
      - c8group    // Group
-     - c8cond     // Conditional
-     - c8loop     // Loop
+     - c8cond     // Conditional (if)
+     - c8loop     // Loop (while, for)
+     - c8flow     // Flow (return, last, next)
 
    - c8obj        // Base object
      - c8error    // Error
