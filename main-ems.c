@@ -32,9 +32,9 @@ void evaluate(const char* line)
   struct c8ctx* ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);
-  struct c8expr* expr = c8expr_create(ctx);
+  struct c8val* eval = c8eval_create(ctx);
 
-  struct c8obj* r = c8expr_eval(expr, line);
+  struct c8obj* r = c8eval_expr(eval, line);
   if (r) {
     struct c8buf rs; c8buf_init(&rs);
     c8obj_str(r, &rs, C8_FMT_DEC);
@@ -46,7 +46,7 @@ void evaluate(const char* line)
     write(fileno(stdout), null, strlen(null));
   }
 
-  c8expr_destroy(expr);
+  c8eval_destroy(eval);
   c8ctx_destroy(ctx);
 }
 

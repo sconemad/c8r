@@ -28,6 +28,7 @@
 #include "c8vec.h"
 #include "c8obj.h"
 #include "c8buf.h"
+#include "c8debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ static void c8cond_destroy(struct c8stmt* o)
 static int c8cond_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
-  printf("c8cond_parse: %s\n", token);
+  c8debug(C8_DEBUG_INFO, "c8cond_parse: %s", token);
   struct c8cond* co = to_c8cond(o);
   assert(co);
 

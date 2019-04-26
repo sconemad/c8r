@@ -24,60 +24,10 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "c8script.h"
-#include "c8ctx.h"
-#include "c8func.h"
+static struct c8ctx* ctx;
 
-int run_script(struct c8ctx* ctx, const char* file)
+int run_interactive()
 {
-  FILE* f = fopen(file, "r");
-  if (!f) return 1;
-  fseek(f, 0L, SEEK_END);
-  long size = ftell(f);
-  char* data = malloc(size+1);
-  fseek(f, 0L, SEEK_SET);
-  fread(data, 1, size ,f); 
-  fclose(f);
-  data[size] = 0;
-
-  // parse
-  struct c8script* script = c8script_create(ctx);
-  int pr = c8script_parse(script, data);
-  printf("c8script_parse: %d\n\n", pr);
-
-  // run
-  struct c8obj* r = c8script_run(script);
-  struct c8buf rs; c8buf_init(&rs);
-  if (r) {
-    c8obj_str(r, &rs, 0);
-  } else {
-    c8buf_append_str(&rs, "null");
-  }
-  printf("c8script_run: %s\n\n", c8buf_str(&rs));
-  c8buf_clear(&rs);
-  c8obj_unref(r);
-  return 0;
-}
-
-struct c8obj* print(struct c8list* args)
-{
-  struct c8obj* a = c8list_at(args, 0);
-  struct c8buf m;
-  c8buf_init(&m);
-  c8obj_str(a, &m, C8_FMT_DEC);
-  printf("%s\n", c8buf_str(&m));
-  return 0;
-}
-
-int main(int argc, char* argv[])
-{
-  struct c8ctx* ctx = c8ctx_create();
-  c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print, 0));
-  c8mpfr_init_ctx(ctx);
-  c8mpz_init_ctx(ctx);
-
-  if (argc == 2) return run_script(ctx, argv[1]);
-
   struct c8buf hf;
   c8buf_init_str(&hf, getenv("HOME"));
   c8buf_append_str(&hf, "/.c8r_history");
@@ -91,7 +41,8 @@ int main(int argc, char* argv[])
   int fmt = C8_FMT_DEC;
 
   while (1) {
-    char* line = readline("c8r> ");
+    //    char* line = readline("c8r> ");
+    char* line = readline("\x1b[1;1mc8r>\x1b[m ");
     if (line==0 || strcmp(line, "exit") == 0) break;
     if (line[0] == 0) continue;
 
@@ -122,6 +73,91 @@ int main(int argc, char* argv[])
   write_history(c8buf_str(&hf));
   c8buf_clear(&hf);
   c8eval_destroy(eval);
-  c8ctx_destroy(ctx);
   return 0;
+}
+
+int run_script(const char* file)
+{
+  FILE* f = fopen(file, "r");
+  if (!f) return 1;
+  fseek(f, 0L, SEEK_END);
+  long size = ftell(f);
+  char* data = malloc(size+1);
+  fseek(f, 0L, SEEK_SET);
+  fread(data, 1, size ,f); 
+  fclose(f);
+  data[size] = 0;
+
+  // parse
+  struct c8script* script = c8script_create(ctx);
+  int pr = c8script_parse(script, data);
+  c8debug(C8_DEBUG_INFO, "c8script_parse returned %d", pr);
+
+  // run
+  struct c8obj* r = c8script_run(script);
+  struct c8buf rs; c8buf_init(&rs);
+  if (r) {
+    c8obj_str(r, &rs, 0);
+  } else {
+    c8buf_append_str(&rs, "null");
+  }
+  c8debug(C8_DEBUG_INFO, "c8script_run returned %s", c8buf_str(&rs));
+  c8buf_clear(&rs);
+  c8obj_unref(r);
+  c8script_destroy(script);
+  return 0;
+}
+
+struct c8obj* print(struct c8list* args)
+{
+  if (c8list_size(args) != 1) 
+    return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* a = c8list_at(args, 0);
+  struct c8buf m; c8buf_init(&m);
+  c8obj_str(a, &m, C8_FMT_DEC);
+  printf("%s\n", c8buf_str(&m));
+  c8buf_clear(&m);
+  return 0;
+}
+
+struct c8obj* run(struct c8list* args)
+{
+  if (c8list_size(args) != 1)
+    return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* a = c8list_at(args, 0);
+  struct c8buf m; c8buf_init(&m);
+  c8obj_str(a, &m, C8_FMT_DEC);
+  run_script(c8buf_str(&m));
+  c8buf_clear(&m);
+  return 0;
+}
+
+struct c8obj* debug(struct c8list* args)
+{
+  if (c8list_size(args) != 1) 
+    return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* a = c8list_at(args, 0);
+  c8debug_level(c8obj_int(a));
+  c8obj_unref(a);
+  return 0;
+}
+
+int main(int argc, char* argv[])
+{
+  ctx = c8ctx_create();
+  c8mpfr_init_ctx(ctx);
+  c8mpz_init_ctx(ctx);
+  c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print, 0));
+  c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run, 0));
+  c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug, 0));
+
+  int ret = 0;
+  if (argc == 2) {
+    ret = run_script(argv[1]);
+  } else {
+    ret = run_interactive();
+  }
+
+  c8ctx_destroy(ctx);
+  return ret;
 }

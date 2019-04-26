@@ -30,6 +30,7 @@
 #include "c8eval.h"
 #include "c8buf.h"
 #include "c8vec.h"
+#include "c8debug.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,19 +85,18 @@ int c8script_parse(struct c8script* o, const char* script)
 
   while (1) {
     if (!next(o)) break;
-    //printf("TOK: %s\n", c8buf_str(&o->token));
     while (1) {
       struct c8stmt* cur = (struct c8stmt*)c8vec_at(&o->stack, -1);
       int pr = c8stmt_parse(cur, o, c8buf_str(&o->token));
       if (pr == C8_PARSERESULT_POP || pr == C8_PARSERESULT_END) {
 	if (c8vec_size(&o->stack) == 0) {
-	  printf("c8script: parse stack underflow\n");
+	  c8debug(C8_DEBUG_ERROR, "c8script: parse stack underflow");
 	  return 2;
 	}
 	c8vec_pop_back(&o->stack);
       }
       if (pr == C8_PARSERESULT_ERROR) {
-	printf("c8script: syntax error\n");
+	c8debug(C8_DEBUG_ERROR, "c8script: syntax error");
 	return 1;
       }
       if (pr != C8_PARSERESULT_POP) {
@@ -180,7 +180,6 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
 
 static int next(struct c8script* o)
 {
-  //printf("next: ");
   // Reset
   c8buf_clear(&o->token);
   o->tokenid = C8_PARSETOKEN_UNKNOWN;
@@ -192,7 +191,6 @@ static int next(struct c8script* o)
   // Skip initial whitespace
   while (*o->pos && isspace(*o->pos)) ++o->pos;
   if (!*o->pos) {
-    //printf("END\n");
     return 0;
   }
 
@@ -281,7 +279,7 @@ static int next(struct c8script* o)
   c8buf_append_strn(&o->token, o->pos, len);
   o->pos += len + skip;
   
-  //printf("%s\n", c8buf_str(&o->token));
+  c8debug(C8_DEBUG_DETAIL, "token: %s", c8buf_str(&o->token));
   return 1;
 }
 

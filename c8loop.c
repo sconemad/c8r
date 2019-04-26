@@ -28,6 +28,7 @@
 #include "c8vec.h"
 #include "c8obj.h"
 #include "c8buf.h"
+#include "c8debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -83,7 +84,7 @@ static int parse_loop(struct c8loop* lo, const char* token)
 static int c8loop_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
-  printf("c8loop_parse: %s\n", token);
+  c8debug(C8_DEBUG_INFO, "c8loop_parse: %s", token);
   struct c8loop* lo = to_c8loop(o);
   assert(lo);
 

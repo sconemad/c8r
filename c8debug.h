@@ -1,6 +1,6 @@
-/** c8r - include all public c8r headers
+/** c8debug - debugging
  *
- * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
+ * Copyright (c) 2019 Andrew Wedgbury <wedge@sconemad.com>
  *
  * This file is part of c8r.
  *
@@ -20,18 +20,17 @@
 
 #pragma once
 
-#include "c8version.h"
-#include "c8buf.h"
-#include "c8ops.h"
-#include "c8obj.h"
-#include "c8error.h"
-#include "c8string.h"
-#include "c8mpz.h"
-#include "c8mpfr.h"
-#include "c8list.h"
-#include "c8eval.h"
-#include "c8ctx.h"
-#include "c8script.h"
-#include "c8ctx.h"
-#include "c8func.h"
-#include "c8debug.h"
+#define C8_DEBUG_OFF 0
+#define C8_DEBUG_ERROR 1
+#define C8_DEBUG_WARNING 2
+#define C8_DEBUG_INFO 3
+#define C8_DEBUG_DETAIL 4
+
+/** Set the logging level
+ */
+void c8debug_level(int enable);
+
+/** Debug log
+ */
+void c8debug(int level, const char* msg, ...);
+

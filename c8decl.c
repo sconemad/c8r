@@ -30,6 +30,7 @@
 #include "c8buf.h"
 #include "c8group.h"
 #include "c8ctx.h"
+#include "c8debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ static void c8decl_destroy(struct c8stmt* o)
 static int c8decl_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
-  printf("c8decl_parse: %s\n", token);
+  c8debug(C8_DEBUG_INFO, "c8decl_parse: %s", token);
   struct c8decl* co = to_c8decl(o);
   assert(co);
 
@@ -98,7 +99,6 @@ static struct c8obj* c8decl_run(struct c8stmt* o,
   struct c8stmt* p = o->parent;
   struct c8group* g = to_c8group(p);
   if (g) {
-    printf("Adding %s to ctx\n", c8buf_str(&co->name));
     struct c8ctx* ctx = c8group_ctx(g);
     c8ctx_add(ctx, c8buf_str(&co->name), init);
   }

@@ -28,6 +28,7 @@
 #include "c8vec.h"
 #include "c8obj.h"
 #include "c8buf.h"
+#include "c8debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -52,7 +53,7 @@ static void c8flow_destroy(struct c8stmt* o)
 static int c8flow_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
-  printf("c8flow_parse: %s\n", token);
+  c8debug(C8_DEBUG_INFO, "c8flow_parse: %s", token);
   struct c8flow* fo = to_c8flow(o);
   assert(fo);
 

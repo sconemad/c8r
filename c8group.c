@@ -29,6 +29,7 @@
 #include "c8objimp.h"
 #include "c8ctx.h"
 #include "c8buf.h"
+#include "c8debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,7 +59,7 @@ static void c8group_destroy(struct c8stmt* o)
 static int c8group_parse(struct c8stmt* o, struct c8script* script,
 			 const char* token)
 {
-  printf("c8group_parse: %s\n", token);
+  c8debug(C8_DEBUG_INFO, "c8group_parse: %s", token);
   struct c8group* go = to_c8group(o);
   assert(go);
 

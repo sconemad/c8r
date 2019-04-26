@@ -49,6 +49,7 @@ add_library(c8
   c8buf.c
   c8cond.c
   c8ctx.c
+  c8debug.c
   c8decl.c
   c8error.c
   c8eval.c
