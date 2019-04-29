@@ -2,26 +2,31 @@
 
 ## Code structure
 
-   - c8script     // Script parser/runner
-   - c8eval       // Expression parser/evaluator
-   - c8ctx        // Context
+   - __c8script__     Script parser/runner
+   - __c8eval__       Expression parser/evaluator
+   - __c8ctx__        Context
 
-   - c8stmt       // Base statement
-     - c8expr     // Expression
-     - c8group    // Group
-     - c8cond     // Conditional (if)
-     - c8loop     // Loop (while, for)
-     - c8flow     // Flow (return, last, next)
+   - __c8stmt__       Base statement
+     - __c8expr__     Expression
+     - __c8group__    Group
+     - __c8cond__     Conditional (if)
+     - __c8loop__     Loop (while, for)
+     - __c8flow__     Flow (return, last, next)
+     - __c8decl__     Variable declaration
+     - __c8subdef__   Subroutine definition
 
-   - c8obj        // Base object
-     - c8error    // Error
-     - c8bool     // Boolean
-     - c8string   // String
-     - c8list     // List
-     - c8map      // Map
-     - c8func     // Function/method
-     - c8mpz      // GMP integer
-     - c8mpfr     // MPFR float
+   - __c8obj__        Base object
+     - __c8error__    Error
+     - __c8bool__     Boolean
+     - __c8string__   String
+     - __c8list__     List
+     - __c8map__      Map
+     - __c8func__     Function/method
+     - __c8sub__      Subroutine
+     - __c8mpz__      GMP integer
+     - __c8mpfr__     MPFR float
 
-   - c8buf        // Buffer
-   - c8vec        // Vector
+   - __c8buf__        Buffer
+   - __c8vec__        Vector
+
+   - __c8debug__      Debug logger
