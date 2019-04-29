@@ -46,5 +46,6 @@ struct c8stmt_imp {
 struct c8stmt {
   const struct c8stmt_imp* imp;
   struct c8stmt* parent;
+  int line;
 };
 

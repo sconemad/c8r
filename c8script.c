@@ -26,11 +26,13 @@
 #include "c8loop.h"
 #include "c8decl.h"
 #include "c8flow.h"
+#include "c8sub.h"
 #include "c8obj.h"
 #include "c8eval.h"
 #include "c8buf.h"
 #include "c8vec.h"
 #include "c8debug.h"
+#include "c8stmtimp.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +43,7 @@
 struct c8script {
   struct c8buf script;
   const char* pos;
+  int line;
   struct c8buf token;
   int tokenid;
   struct c8vec stack;
@@ -79,6 +82,7 @@ int c8script_parse(struct c8script* o, const char* script)
   assert(o);
   c8buf_init_str(&o->script, script);
   o->pos = c8buf_str(&o->script);
+  o->line = 1;
 
   struct c8stmt* root = (struct c8stmt*)c8group_create();
   c8vec_push_back(&o->stack, root);
@@ -90,13 +94,13 @@ int c8script_parse(struct c8script* o, const char* script)
       int pr = c8stmt_parse(cur, o, c8buf_str(&o->token));
       if (pr == C8_PARSERESULT_POP || pr == C8_PARSERESULT_END) {
 	if (c8vec_size(&o->stack) == 0) {
-	  c8debug(C8_DEBUG_ERROR, "c8script: parse stack underflow");
+	  c8debug(C8_DEBUG_ERROR, "c8script: %d: parse stack underflow", o->line);
 	  return 2;
 	}
 	c8vec_pop_back(&o->stack);
       }
       if (pr == C8_PARSERESULT_ERROR) {
-	c8debug(C8_DEBUG_ERROR, "c8script: syntax error");
+	c8debug(C8_DEBUG_ERROR, "c8script: %d: syntax error", o->line);
 	return 1;
       }
       if (pr != C8_PARSERESULT_POP) {
@@ -168,14 +172,22 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   case C8_PARSETOKEN_VAR:
     s = (struct c8stmt*)c8decl_create(); break;
   case C8_PARSETOKEN_SUB:
-    s = (struct c8stmt*)0; break;
+    s = (struct c8stmt*)c8sub_create(); break;
   case C8_PARSETOKEN_OPEN_BRACE: 
     s = (struct c8stmt*)c8group_create(); break;
   case C8_PARSETOKEN_UNKNOWN: 
     s = (struct c8stmt*)c8expr_create(token); break;
   }
+  s->line = o->line;
   if (s && tid != C8_PARSETOKEN_UNKNOWN) c8vec_push_back(&o->stack, s);
   return s;
+}
+
+static int count_lines(const char* start, const char* end)
+{
+  int l = 0;
+  for (const char* c = start; c<end; ++c) if (*c == '\n') ++l;
+  return l;
 }
 
 static int next(struct c8script* o)
@@ -183,6 +195,7 @@ static int next(struct c8script* o)
   // Reset
   c8buf_clear(&o->token);
   o->tokenid = C8_PARSETOKEN_UNKNOWN;
+  const char* start = o->pos;
 
   // Determine parse mode of current statement
   struct c8stmt* cs = (struct c8stmt*)c8vec_at(&o->stack,-1);
@@ -191,6 +204,7 @@ static int next(struct c8script* o)
   // Skip initial whitespace
   while (*o->pos && isspace(*o->pos)) ++o->pos;
   if (!*o->pos) {
+    o->line += count_lines(start, o->pos);
     return 0;
   }
 
@@ -278,7 +292,8 @@ static int next(struct c8script* o)
   c8buf_clear(&o->token);
   c8buf_append_strn(&o->token, o->pos, len);
   o->pos += len + skip;
-  
+  o->line += count_lines(start, o->pos);
+
   c8debug(C8_DEBUG_DETAIL, "token: %s", c8buf_str(&o->token));
   return 1;
 }

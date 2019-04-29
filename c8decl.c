@@ -96,8 +96,7 @@ static struct c8obj* c8decl_run(struct c8stmt* o,
   init = c8eval_expr(eval, c8buf_str(&co->initialiser));
   if (init) c8obj_ref(init);
 
-  struct c8stmt* p = o->parent;
-  struct c8group* g = to_c8group(p);
+  struct c8group* g = find_parent_group(o);
   if (g) {
     struct c8ctx* ctx = c8group_ctx(g);
     c8ctx_add(ctx, c8buf_str(&co->name), init);

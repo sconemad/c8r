@@ -24,6 +24,10 @@ struct c8group;
 struct c8stmt;
 struct c8ctx;
 
+/** Find parent group
+ */
+struct c8group* find_parent_group(struct c8stmt* o);
+
 /** Safe cast from c8stmt
  */
 struct c8group* to_c8group(struct c8stmt* o);

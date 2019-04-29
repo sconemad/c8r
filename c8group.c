@@ -126,17 +126,29 @@ static const struct c8stmt_imp c8group_imp = {
   c8group_run,
 };
 
+struct c8group* find_parent_group(struct c8stmt* o)
+{
+  struct c8stmt* p = o->parent;
+  while (p) {
+    struct c8group* g = to_c8group(p);
+    if (g) return g;
+    p = p->parent;
+  }
+  return 0;
+}
+
 struct c8group* to_c8group(struct c8stmt* o)
 {
   return (o && o->imp && o->imp == &c8group_imp) ?
     (struct c8group*)o : 0;
 }
 
-struct c8group* c8group_create(const char* expr)
+struct c8group* c8group_create()
 {
   struct c8group* go = malloc(sizeof(struct c8group));
   go->base.imp = &c8group_imp;
   go->base.parent = 0;
+  go->base.line = 0;
   c8vec_init(&go->vec);
   go->ctx = c8ctx_create();
   return go;
