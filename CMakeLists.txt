@@ -67,5 +67,6 @@ add_library(c8
   c8script.c
   c8stmt.c
   c8string.c
+  c8sub.c
   c8vec.c
   )

@@ -172,7 +172,7 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   case C8_PARSETOKEN_VAR:
     s = (struct c8stmt*)c8decl_create(); break;
   case C8_PARSETOKEN_SUB:
-    s = (struct c8stmt*)c8sub_create(); break;
+    s = (struct c8stmt*)c8subdef_create(); break;
   case C8_PARSETOKEN_OPEN_BRACE: 
     s = (struct c8stmt*)c8group_create(); break;
   case C8_PARSETOKEN_UNKNOWN: 
