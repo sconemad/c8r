@@ -44,24 +44,24 @@ struct c8group {
 
 static void c8group_destroy(struct c8stmt* o)
 {
-  struct c8group* go = to_c8group(o);
-  assert(go);
-  int size = c8vec_size(&go->vec);
+  struct c8group* oo = to_c8group(o);
+  assert(oo);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct c8stmt* item = (struct c8stmt*)c8vec_at(&go->vec, i);
+    struct c8stmt* item = (struct c8stmt*)c8vec_at(&oo->vec, i);
     c8stmt_destroy(item);
   }
-  c8vec_clear(&go->vec);
-  c8ctx_destroy(go->ctx);
-  free(go);
+  c8vec_clear(&oo->vec);
+  c8ctx_destroy(oo->ctx);
+  free(oo);
 }
 
 static int c8group_parse(struct c8stmt* o, struct c8script* script,
 			 const char* token)
 {
   c8debug(C8_DEBUG_INFO, "c8group_parse: %s", token);
-  struct c8group* go = to_c8group(o);
-  assert(go);
+  struct c8group* oo = to_c8group(o);
+  assert(oo);
 
   if (strcmp(token, "}") == 0) {
     return C8_PARSE_END;
@@ -70,14 +70,14 @@ static int c8group_parse(struct c8stmt* o, struct c8script* script,
   struct c8stmt* sub = c8script_parse_token(script, token);
   if (!sub) return C8_PARSE_ERROR;
   c8stmt_set_parent(sub, o);
-  c8vec_push_back(&go->vec, sub);
+  c8vec_push_back(&oo->vec, sub);
   return C8_PARSE_CONTINUE;
 }
 
 static int c8group_parse_mode(struct c8stmt* o)
 {
-  struct c8group* go = to_c8group(o);
-  assert(go);
+  struct c8group* oo = to_c8group(o);
+  assert(oo);
   return C8_PARSEMODE_STATEMENT;
 }
 
@@ -85,17 +85,17 @@ static struct c8obj* c8group_resolve(const char* name, void* data)
 {
   struct c8stmt* o = (struct c8stmt*)data;
   if (!o) return 0;
-  struct c8group* go = to_c8group(o);
-  if (!go) return c8group_resolve(name, o->parent);
-  struct c8obj* ret = c8ctx_resolve(go->ctx, name);
+  struct c8group* oo = to_c8group(o);
+  if (!oo) return c8group_resolve(name, o->parent);
+  struct c8obj* ret = c8ctx_resolve(oo->ctx, name);
   if (ret) return ret;
   return c8group_resolve(name, o->parent);
 }
 
 static int c8group_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8group* go = to_c8group(o);
-  assert(go);
+  struct c8group* oo = to_c8group(o);
+  assert(oo);
   int ret = C8_RUN_NORMAL;
   c8eval_resolver_func save_resolver;
   void* save_resolver_data;
@@ -103,9 +103,9 @@ static int c8group_run(struct c8stmt* o, struct c8script* script)
   struct c8eval* ev = c8script_eval(script);
   save_resolver = c8eval_get_resolver(ev, &save_resolver_data);
 
-  int size = c8vec_size(&go->vec);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct c8stmt* item = (struct c8stmt*)c8vec_at(&go->vec, i);
+    struct c8stmt* item = (struct c8stmt*)c8vec_at(&oo->vec, i);
 
     c8eval_set_resolver(ev, c8group_resolve, o);
     ret = c8stmt_run(item, script);
@@ -142,17 +142,17 @@ struct c8group* to_c8group(struct c8stmt* o)
 
 struct c8group* c8group_create()
 {
-  struct c8group* go = malloc(sizeof(struct c8group));
-  go->base.imp = &c8group_imp;
-  go->base.parent = 0;
-  go->base.line = 0;
-  c8vec_init(&go->vec);
-  go->ctx = c8ctx_create();
-  return go;
+  struct c8group* oo = malloc(sizeof(struct c8group));
+  oo->base.imp = &c8group_imp;
+  oo->base.parent = 0;
+  oo->base.line = 0;
+  c8vec_init(&oo->vec);
+  oo->ctx = c8ctx_create();
+  return oo;
 }
 
-struct c8ctx* c8group_ctx(struct c8group* o)
+struct c8ctx* c8group_ctx(struct c8group* oo)
 {
-  assert(o);
-  return o->ctx;
+  assert(oo);
+  return oo->ctx;
 }

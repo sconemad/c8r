@@ -34,8 +34,9 @@ struct c8func* to_c8func(struct c8obj* o);
 
 /** Create a c8func object
  */
-struct c8func* c8func_create(c8func_func f, struct c8obj* obj);
+struct c8func* c8func_create(c8func_func f);
+struct c8func* c8func_create_method(c8func_func f, struct c8obj* obj);
 
 /** Call the function
  */
-struct c8obj* c8func_call(struct c8func* fo, struct c8list* args);
+struct c8obj* c8func_call(struct c8func* oo, struct c8list* args);

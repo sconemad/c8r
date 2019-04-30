@@ -35,41 +35,41 @@ struct c8list {
 
 static void c8list_destroy(struct c8obj* o)
 {
-  struct c8list* lo = to_c8list(o);
-  assert(lo);
-  int size = c8vec_size(&lo->vec);
+  struct c8list* oo = to_c8list(o);
+  assert(oo);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct c8obj* item = (struct c8obj*)c8vec_at(&lo->vec, i);
+    struct c8obj* item = (struct c8obj*)c8vec_at(&oo->vec, i);
     c8obj_unref(item);
   }
-  c8vec_clear(&lo->vec);
-  free(lo);
+  c8vec_clear(&oo->vec);
+  free(oo);
 }
 
 static struct c8obj* c8list_copy(const struct c8obj* o)
 {
-  const struct c8list* lo = to_const_c8list(o);
-  assert(lo);
+  const struct c8list* oo = to_const_c8list(o);
+  assert(oo);
   return 0;
 }
 
 static int c8list_int(const struct c8obj* o)
 {
-  const struct c8list* lo = to_const_c8list(o);
-  assert(lo);
-  return c8vec_size(&lo->vec);
+  const struct c8list* oo = to_const_c8list(o);
+  assert(oo);
+  return c8vec_size(&oo->vec);
 }
 
 static void c8list_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8list* lo = to_const_c8list(o);
-  assert(lo);
+  const struct c8list* oo = to_const_c8list(o);
+  assert(oo);
   c8buf_append_str(buf, "[");
-  int size = c8vec_size(&lo->vec);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
     if (i!=0) c8buf_append_str(buf, ",");
     const struct c8obj* item =
-      (const struct c8obj*)c8vec_const_at(&lo->vec, i);
+      (const struct c8obj*)c8vec_const_at(&oo->vec, i);
     if (item) c8obj_str(item, buf, f);
   }
   c8buf_append_str(buf, "]");
@@ -77,8 +77,8 @@ static void c8list_str(const struct c8obj* o, struct c8buf* buf, int f)
 
 static struct c8obj* c8list_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8list* lo = to_c8list(o);
-  assert(lo);
+  struct c8list* oo = to_c8list(o);
+  assert(oo);
   return 0;
 }
 
@@ -103,52 +103,52 @@ struct c8list* to_c8list(struct c8obj* o)
 
 struct c8list* c8list_create()
 {
-  struct c8list* lo = malloc(sizeof(struct c8list));
-  assert(lo);
-  lo->base.refs = 1;
-  lo->base.imp = &c8list_imp;
-  c8vec_init(&lo->vec);
-  return lo;
+  struct c8list* oo = malloc(sizeof(struct c8list));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8list_imp;
+  c8vec_init(&oo->vec);
+  return oo;
 }
 
-int c8list_size(const struct c8list* lo)
+int c8list_size(const struct c8list* oo)
 {
-  assert(lo);
-  return c8vec_size(&lo->vec);
+  assert(oo);
+  return c8vec_size(&oo->vec);
 }
 
-struct c8obj* c8list_at(struct c8list* lo, int i)
+struct c8obj* c8list_at(struct c8list* oo, int i)
 {
-  assert(lo);
-  struct c8obj* r = (struct c8obj*)c8vec_at(&lo->vec, i);
+  assert(oo);
+  struct c8obj* r = (struct c8obj*)c8vec_at(&oo->vec, i);
   if (r) return c8obj_ref(r);
   return 0;
 }
 
-void c8list_push_back(struct c8list* lo, struct c8obj* p)
+void c8list_push_back(struct c8list* oo, struct c8obj* p)
 {
-  assert(lo);
+  assert(oo);
   if (p) c8obj_ref(p);
-  c8vec_push_back(&lo->vec, p);
+  c8vec_push_back(&oo->vec, p);
 }
 
-void c8list_pop_back(struct c8list* lo)
+void c8list_pop_back(struct c8list* oo)
 {
-  assert(lo);
-  struct c8obj* p = (struct c8obj*)c8vec_pop_back(&lo->vec);
+  assert(oo);
+  struct c8obj* p = (struct c8obj*)c8vec_pop_back(&oo->vec);
   c8obj_unref(p);
 }
 
-void c8list_push_front(struct c8list* lo, struct c8obj* p)
+void c8list_push_front(struct c8list* oo, struct c8obj* p)
 {
-  assert(lo);
+  assert(oo);
   if (p) c8obj_ref(p);
-  c8vec_push_front(&lo->vec, p);
+  c8vec_push_front(&oo->vec, p);
 }
 
-void c8list_pop_front(struct c8list* lo)
+void c8list_pop_front(struct c8list* oo)
 {
-  assert(lo);
-  struct c8obj* p = (struct c8obj*)c8vec_pop_front(&lo->vec);
+  assert(oo);
+  struct c8obj* p = (struct c8obj*)c8vec_pop_front(&oo->vec);
   c8obj_unref(p);
 }

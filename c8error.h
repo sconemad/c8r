@@ -44,5 +44,5 @@ struct c8error* c8error_create(int code);
 
 /** Set/get the error code
  */
-void c8error_set(struct c8error* eo, int code);
-int c8error_code(const struct c8error* eo);
+void c8error_set(struct c8error* oo, int code);
+int c8error_code(const struct c8error* oo);

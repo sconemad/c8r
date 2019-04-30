@@ -46,33 +46,33 @@ struct c8mpfr* c8mpfr_create_mpfr(const mpfr_t value);
 
 static void c8mpfr_destroy(struct c8obj* o)
 {
-  struct c8mpfr* mo = to_c8mpfr(o);
-  assert(mo);
-  mpfr_clear(mo->value);
-  free(mo);
+  struct c8mpfr* oo = to_c8mpfr(o);
+  assert(oo);
+  mpfr_clear(oo->value);
+  free(oo);
 }
 
 static struct c8obj* c8mpfr_copy(const struct c8obj* o)
 {
-  const struct c8mpfr* mo = to_const_c8mpfr(o);
-  assert(mo);
-  return (struct c8obj*)c8mpfr_create_mpfr(mo->value);
+  const struct c8mpfr* oo = to_const_c8mpfr(o);
+  assert(oo);
+  return (struct c8obj*)c8mpfr_create_mpfr(oo->value);
 }
 
 static int c8mpfr_int(const struct c8obj* o)
 {
-  const struct c8mpfr* mo = to_const_c8mpfr(o);
-  assert(mo);
-  return (int)mpfr_get_si(mo->value, rnd);
+  const struct c8mpfr* oo = to_const_c8mpfr(o);
+  assert(oo);
+  return (int)mpfr_get_si(oo->value, rnd);
 }
 
 static void c8mpfr_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8mpfr* mo = to_const_c8mpfr(o);
-  assert(mo);
+  const struct c8mpfr* oo = to_const_c8mpfr(o);
+  assert(oo);
 
-  if (!mpfr_number_p(mo->value)) {
-    if (mpfr_inf_p(mo->value)) {
+  if (!mpfr_number_p(oo->value)) {
+    if (mpfr_inf_p(oo->value)) {
       c8buf_append_str(buf, "Infinity");
     } else {
       c8buf_append_str(buf, "Not a number");
@@ -88,98 +88,98 @@ static void c8mpfr_str(const struct c8obj* o, struct c8buf* buf, int f)
   char* cs = 0;
   switch (f & C8_FMT_MASK_BASE) {
     case C8_FMT_BIN:
-      mpfr_asprintf(&cs, "%-.*Rb", dp, mo->value);
+      mpfr_asprintf(&cs, "%-.*Rb", dp, oo->value);
       break;
     case C8_FMT_HEX:
-      mpfr_asprintf(&cs, "%-.*Ra", dp, mo->value);
+      mpfr_asprintf(&cs, "%-.*Ra", dp, oo->value);
       break;
     case C8_FMT_SCI:
-      mpfr_asprintf(&cs, "%-.Re", mo->value);
+      mpfr_asprintf(&cs, "%-.Re", oo->value);
       break;
     case C8_FMT_FIX:
-      mpfr_asprintf(&cs, "%-.Rf", mo->value);
+      mpfr_asprintf(&cs, "%-.Rf", oo->value);
       break;
     default:
-      mpfr_asprintf(&cs, "%-.*Rg", dp, mo->value);
+      mpfr_asprintf(&cs, "%-.*Rg", dp, oo->value);
       break;
   }
   c8buf_append_str(buf, cs);
   mpfr_free_str(cs);
 }
 
-static struct c8obj* c8mpfr_binary_op(struct c8mpfr* mo, int op,
+static struct c8obj* c8mpfr_binary_op(struct c8mpfr* oo, int op,
                                       struct c8mpfr* np)
 {
   switch (op) {
     case C8_OP_ADD: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_add(nr->value, mo->value, np->value, rnd);
+      mpfr_add(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_SUBTRACT: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_sub(nr->value, mo->value, np->value, rnd);
+      mpfr_sub(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_MULTIPLY: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_mul(nr->value, mo->value, np->value, rnd);
+      mpfr_mul(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_DIVIDE: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_div(nr->value, mo->value, np->value, rnd);
+      mpfr_div(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_MODULUS: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_fmod(nr->value, mo->value, np->value, rnd);
+      mpfr_fmod(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_POWER: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_pow(nr->value, mo->value, np->value, rnd);
+      mpfr_pow(nr->value, oo->value, np->value, rnd);
       return (struct c8obj*)nr;
     }
 
     case C8_OP_EQUALITY:
       return (struct c8obj*)
-        c8bool_create(mpfr_equal_p(mo->value, np->value));
+        c8bool_create(mpfr_equal_p(oo->value, np->value));
     case C8_OP_INEQUALITY:
       return (struct c8obj*)
-        c8bool_create(!mpfr_equal_p(mo->value, np->value));
+        c8bool_create(!mpfr_equal_p(oo->value, np->value));
     case C8_OP_GREATER:
       return (struct c8obj*)
-        c8bool_create(mpfr_greater_p(mo->value, np->value));
+        c8bool_create(mpfr_greater_p(oo->value, np->value));
     case C8_OP_LESS:
       return (struct c8obj*)
-        c8bool_create(mpfr_less_p(mo->value, np->value));
+        c8bool_create(mpfr_less_p(oo->value, np->value));
     case C8_OP_GREATER_OR_EQUAL:
       return (struct c8obj*)
-        c8bool_create(mpfr_greaterequal_p(mo->value, np->value));
+        c8bool_create(mpfr_greaterequal_p(oo->value, np->value));
     case C8_OP_LESS_OR_EQUAL:
       return (struct c8obj*)
-        c8bool_create(mpfr_lessequal_p(mo->value, np->value));
+        c8bool_create(mpfr_lessequal_p(oo->value, np->value));
 
     case C8_OP_ASSIGN: {
-      mpfr_set(mo->value, np->value, rnd);
-      return c8obj_ref((struct c8obj*)mo);
+      mpfr_set(oo->value, np->value, rnd);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_ADD_ASSIGN: {
-      mpfr_add(mo->value, mo->value, np->value, rnd);
-      return c8obj_ref((struct c8obj*)mo);
+      mpfr_add(oo->value, oo->value, np->value, rnd);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_SUBTRACT_ASSIGN: {
-      mpfr_sub(mo->value, mo->value, np->value, rnd);
-      return c8obj_ref((struct c8obj*)mo);
+      mpfr_sub(oo->value, oo->value, np->value, rnd);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_MULTIPLY_ASSIGN: {
-      mpfr_mul(mo->value, mo->value, np->value, rnd);
-      return c8obj_ref((struct c8obj*)mo);
+      mpfr_mul(oo->value, oo->value, np->value, rnd);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_DIVIDE_ASSIGN: {
-      mpfr_div(mo->value, mo->value, np->value, rnd);
-      return c8obj_ref((struct c8obj*)mo);
+      mpfr_div(oo->value, oo->value, np->value, rnd);
+      return c8obj_ref((struct c8obj*)oo);
     }
   }
   return 0;
@@ -187,52 +187,52 @@ static struct c8obj* c8mpfr_binary_op(struct c8mpfr* mo, int op,
 
 static struct c8obj* c8mpfr_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8mpfr* mo = to_c8mpfr(o);
-  assert(mo);
+  struct c8mpfr* oo = to_c8mpfr(o);
+  assert(oo);
 
   switch (op) {
     case C8_OP_POSITIVE: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_set(nr->value, mo->value, rnd);
+      mpfr_set(nr->value, oo->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_NEGATIVE: {
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_neg(nr->value, mo->value, rnd);
+      mpfr_neg(nr->value, oo->value, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_PRE_INC: {
-      mpfr_add_ui(mo->value, mo->value, 1, rnd);
+      mpfr_add_ui(oo->value, oo->value, 1, rnd);
       c8obj_ref(o);
       return o;
     }
     case C8_OP_PRE_DEC: {
-      mpfr_sub_ui(mo->value, mo->value, 1, rnd);
+      mpfr_sub_ui(oo->value, oo->value, 1, rnd);
       c8obj_ref(o);
       return o;
     }
     case C8_OP_FACTORIAL: {
-      if (!mpfr_integer_p(mo->value)) {
+      if (!mpfr_integer_p(oo->value)) {
         return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
       }
       struct c8mpfr* nr = c8mpfr_create();
-      mpfr_fac_ui(nr->value, mpfr_get_ui(mo->value, rnd), rnd);
+      mpfr_fac_ui(nr->value, mpfr_get_ui(oo->value, rnd), rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_POST_INC: {
-      struct c8mpfr* nr = c8mpfr_create_mpfr(mo->value);
-      mpfr_add_ui(mo->value, mo->value, 1, rnd);
+      struct c8mpfr* nr = c8mpfr_create_mpfr(oo->value);
+      mpfr_add_ui(oo->value, oo->value, 1, rnd);
       return (struct c8obj*)nr;
     }
     case C8_OP_POST_DEC: {
-      struct c8mpfr* nr = c8mpfr_create_mpfr(mo->value);
-      mpfr_sub_ui(mo->value, mo->value, 1, rnd);
+      struct c8mpfr* nr = c8mpfr_create_mpfr(oo->value);
+      mpfr_sub_ui(oo->value, oo->value, 1, rnd);
       return (struct c8obj*)nr;
     }
   }
 
   struct c8mpfr* np = to_c8mpfr(p);
-  if (np) return c8mpfr_binary_op(mo, op, np);
+  if (np) return c8mpfr_binary_op(oo, op, np);
 
   // Convert p to mpfr and perform the op
   if (p) {
@@ -240,7 +240,7 @@ static struct c8obj* c8mpfr_op(struct c8obj* o, int op, struct c8obj* p)
     c8obj_str(p, &buf, 0);
     struct c8mpfr* fo = c8mpfr_create_str(c8buf_str(&buf));
     c8buf_clear(&buf);
-    struct c8obj* r = c8mpfr_binary_op(mo, op, fo);
+    struct c8obj* r = c8mpfr_binary_op(oo, op, fo);
     c8obj_unref((struct c8obj*)fo);
     return r;
   }
@@ -269,31 +269,31 @@ struct c8mpfr* to_c8mpfr(struct c8obj* o)
 
 struct c8mpfr* c8mpfr_create()
 {
-  struct c8mpfr* mo = malloc(sizeof(struct c8mpfr));
-  assert(mo);
-  mo->base.refs = 1;
-  mo->base.imp = &c8mpfr_imp;
-  mpfr_init(mo->value);
-  return mo;
+  struct c8mpfr* oo = malloc(sizeof(struct c8mpfr));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8mpfr_imp;
+  mpfr_init(oo->value);
+  return oo;
 }
 
 struct c8mpfr* c8mpfr_create_int(int value)
 {
-  struct c8mpfr* mo = c8mpfr_create();
-  mpfr_set_si(mo->value, value, rnd);
-  return mo;
+  struct c8mpfr* oo = c8mpfr_create();
+  mpfr_set_si(oo->value, value, rnd);
+  return oo;
 }
 
 struct c8mpfr* c8mpfr_create_double(long double value)
 {
-  struct c8mpfr* mo = c8mpfr_create();
-  mpfr_set_ld(mo->value, value, rnd);
-  return mo;
+  struct c8mpfr* oo = c8mpfr_create();
+  mpfr_set_ld(oo->value, value, rnd);
+  return oo;
 }
 
 struct c8mpfr* c8mpfr_create_str(const char* str)
 {
-  struct c8mpfr* mo = c8mpfr_create();
+  struct c8mpfr* oo = c8mpfr_create();
   int len = strlen(str);
   int base = 10;
   if (len > 2 && str[0] == '0') {
@@ -304,8 +304,8 @@ struct c8mpfr* c8mpfr_create_str(const char* str)
       case 'x': base = 16; str+=2; break;
     }
   }
-  mpfr_set_str(mo->value, str, base, rnd);
-  return mo;
+  mpfr_set_str(oo->value, str, base, rnd);
+  return oo;
 }
 
 struct c8mpfr* c8mpfr_create_c8obj(const struct c8obj* obj)
@@ -313,16 +313,16 @@ struct c8mpfr* c8mpfr_create_c8obj(const struct c8obj* obj)
   assert(obj);
   struct c8buf buf; c8buf_init(&buf);
   c8obj_str(obj, &buf, 0);
-  struct c8mpfr* mo = c8mpfr_create_str(c8buf_str(&buf));
+  struct c8mpfr* oo = c8mpfr_create_str(c8buf_str(&buf));
   c8buf_clear(&buf);
-  return mo;
+  return oo;
 }
 
 struct c8mpfr* c8mpfr_create_mpfr(const mpfr_t value)
 {
-  struct c8mpfr* mo = c8mpfr_create();
-  mpfr_set(mo->value, value, rnd);
-  return mo;
+  struct c8mpfr* oo = c8mpfr_create();
+  mpfr_set(oo->value, value, rnd);
+  return oo;
 }
 
 void c8mpfr_init_ctx(struct c8ctx* ctx)
@@ -337,23 +337,23 @@ void c8mpfr_init_ctx(struct c8ctx* ctx)
   mpfr_exp(c->value, c->value, rnd);
   c8ctx_add(ctx, "e", (struct c8obj*)c);
 
-  c8ctx_add(ctx, "ceil", (struct c8obj*)c8func_create(c8mpfr_ceil, 0));
-  c8ctx_add(ctx, "floor", (struct c8obj*)c8func_create(c8mpfr_floor, 0));
-  c8ctx_add(ctx, "trunc", (struct c8obj*)c8func_create(c8mpfr_trunc, 0));
-  c8ctx_add(ctx, "log", (struct c8obj*)c8func_create(c8mpfr_log, 0));
-  c8ctx_add(ctx, "exp", (struct c8obj*)c8func_create(c8mpfr_exp, 0));
-  c8ctx_add(ctx, "sqrt", (struct c8obj*)c8func_create(c8mpfr_sqrt, 0));
-  c8ctx_add(ctx, "cos", (struct c8obj*)c8func_create(c8mpfr_cos, 0));
-  c8ctx_add(ctx, "sin", (struct c8obj*)c8func_create(c8mpfr_sin, 0));
-  c8ctx_add(ctx, "tan", (struct c8obj*)c8func_create(c8mpfr_tan, 0));
-  c8ctx_add(ctx, "acos", (struct c8obj*)c8func_create(c8mpfr_acos, 0));
-  c8ctx_add(ctx, "asin", (struct c8obj*)c8func_create(c8mpfr_asin, 0));
-  c8ctx_add(ctx, "atan", (struct c8obj*)c8func_create(c8mpfr_atan, 0));
-  c8ctx_add(ctx, "atan2", (struct c8obj*)c8func_create(c8mpfr_atan2, 0));
-  c8ctx_add(ctx, "cosh", (struct c8obj*)c8func_create(c8mpfr_cosh, 0));
-  c8ctx_add(ctx, "sinh", (struct c8obj*)c8func_create(c8mpfr_sinh, 0));
-  c8ctx_add(ctx, "tanh", (struct c8obj*)c8func_create(c8mpfr_tanh, 0));
-  c8ctx_add(ctx, "mean", (struct c8obj*)c8func_create(c8mpfr_mean, 0));
+  c8ctx_add(ctx, "ceil", (struct c8obj*)c8func_create(c8mpfr_ceil));
+  c8ctx_add(ctx, "floor", (struct c8obj*)c8func_create(c8mpfr_floor));
+  c8ctx_add(ctx, "trunc", (struct c8obj*)c8func_create(c8mpfr_trunc));
+  c8ctx_add(ctx, "log", (struct c8obj*)c8func_create(c8mpfr_log));
+  c8ctx_add(ctx, "exp", (struct c8obj*)c8func_create(c8mpfr_exp));
+  c8ctx_add(ctx, "sqrt", (struct c8obj*)c8func_create(c8mpfr_sqrt));
+  c8ctx_add(ctx, "cos", (struct c8obj*)c8func_create(c8mpfr_cos));
+  c8ctx_add(ctx, "sin", (struct c8obj*)c8func_create(c8mpfr_sin));
+  c8ctx_add(ctx, "tan", (struct c8obj*)c8func_create(c8mpfr_tan));
+  c8ctx_add(ctx, "acos", (struct c8obj*)c8func_create(c8mpfr_acos));
+  c8ctx_add(ctx, "asin", (struct c8obj*)c8func_create(c8mpfr_asin));
+  c8ctx_add(ctx, "atan", (struct c8obj*)c8func_create(c8mpfr_atan));
+  c8ctx_add(ctx, "atan2", (struct c8obj*)c8func_create(c8mpfr_atan2));
+  c8ctx_add(ctx, "cosh", (struct c8obj*)c8func_create(c8mpfr_cosh));
+  c8ctx_add(ctx, "sinh", (struct c8obj*)c8func_create(c8mpfr_sinh));
+  c8ctx_add(ctx, "tanh", (struct c8obj*)c8func_create(c8mpfr_tanh));
+  c8ctx_add(ctx, "mean", (struct c8obj*)c8func_create(c8mpfr_mean));
 }
 
 static struct c8obj* c8mpfr_single_arg(struct c8list* args)

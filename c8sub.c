@@ -236,9 +236,9 @@ struct c8sub* c8sub_create(struct c8subdef* def, struct c8script* script)
 struct c8obj* c8sub_call(struct c8sub* oo, struct c8list* args)
 {
   assert(oo);
-  struct c8group* g = to_c8group(oo->def->body);
-  if (g) {
-    struct c8ctx* ctx = c8group_ctx(g);
+  struct c8group* group = to_c8group(oo->def->body);
+  if (group) {
+    struct c8ctx* ctx = c8group_ctx(group);
     const int na = c8vec_size(&oo->def->args);
     if (na != c8list_size(args)) 
       return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);

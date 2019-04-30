@@ -38,34 +38,34 @@ struct c8expr {
 
 static void c8expr_destroy(struct c8stmt* o)
 {
-  struct c8expr* eo = to_c8expr(o);
-  assert(eo);
-  c8buf_clear(&eo->expr);
-  free(eo);
+  struct c8expr* oo = to_c8expr(o);
+  assert(oo);
+  c8buf_clear(&oo->expr);
+  free(oo);
 }
 
 static int c8expr_parse(struct c8stmt* o, struct c8script* script,
 			     const char* token)
 {
-  struct c8expr* eo = to_c8expr(o);
-  assert(eo);
+  struct c8expr* oo = to_c8expr(o);
+  assert(oo);
   return C8_PARSE_POP;
 }
 
 static int c8expr_parse_mode(struct c8stmt* o)
 {
-  struct c8expr* eo = to_c8expr(o);
-  assert(eo);
+  struct c8expr* oo = to_c8expr(o);
+  assert(oo);
   return C8_PARSEMODE_STATEMENT;
 }
 
 static int c8expr_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8expr* eo = to_c8expr(o);
-  assert(eo);
-  c8debug(C8_DEBUG_INFO, "c8expr_run: %s", c8buf_str(&eo->expr));
+  struct c8expr* oo = to_c8expr(o);
+  assert(oo);
+  c8debug(C8_DEBUG_INFO, "c8expr_run: %s", c8buf_str(&oo->expr));
   struct c8eval* eval = c8script_eval(script);
-  struct c8obj* result = c8eval_expr(eval, c8buf_str(&eo->expr));
+  struct c8obj* result = c8eval_expr(eval, c8buf_str(&oo->expr));
   int ret = c8script_handle_result(script, result);
   c8obj_unref(result);
   return ret;
@@ -86,10 +86,10 @@ struct c8expr* to_c8expr(struct c8stmt* o)
 
 struct c8expr* c8expr_create(const char* expr)
 {
-  struct c8expr* eo = malloc(sizeof(struct c8expr));
-  eo->base.imp = &c8expr_imp;
-  eo->base.parent = 0;
-  c8buf_init(&eo->expr);
-  c8buf_append_str(&eo->expr, expr);
-  return eo;
+  struct c8expr* oo = malloc(sizeof(struct c8expr));
+  oo->base.imp = &c8expr_imp;
+  oo->base.parent = 0;
+  c8buf_init(&oo->expr);
+  c8buf_append_str(&oo->expr, expr);
+  return oo;
 }

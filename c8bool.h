@@ -38,5 +38,5 @@ struct c8bool* c8bool_create(int value);
 
 /** Set/get the value
  */
-void c8bool_set(struct c8bool* bo, int code);
-int c8bool_value(const struct c8bool* bo);
+void c8bool_set(struct c8bool* oo, int code);
+int c8bool_value(const struct c8bool* oo);

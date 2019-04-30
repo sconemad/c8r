@@ -46,29 +46,29 @@ struct c8decl {
 
 static void c8decl_destroy(struct c8stmt* o)
 {
-  struct c8decl* co = to_c8decl(o);
-  assert(co);
-  c8buf_clear(&co->name);
-  c8buf_clear(&co->initialiser);
-  free(co);
+  struct c8decl* oo = to_c8decl(o);
+  assert(oo);
+  c8buf_clear(&oo->name);
+  c8buf_clear(&oo->initialiser);
+  free(oo);
 }
 
 static int c8decl_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
   c8debug(C8_DEBUG_INFO, "c8decl_parse: %s", token);
-  struct c8decl* co = to_c8decl(o);
-  assert(co);
+  struct c8decl* oo = to_c8decl(o);
+  assert(oo);
 
-  switch (++co->seq) {
+  switch (++oo->seq) {
   case 1:
-    c8buf_clear(&co->name);
-    c8buf_init_str(&co->name, token);
+    c8buf_clear(&oo->name);
+    c8buf_init_str(&oo->name, token);
     break;
 
   case 2:
-    c8buf_clear(&co->initialiser);
-    c8buf_init_str(&co->initialiser, &token[1]);
+    c8buf_clear(&oo->initialiser);
+    c8buf_init_str(&oo->initialiser, &token[1]);
     break;
 
   default:
@@ -80,22 +80,22 @@ static int c8decl_parse(struct c8stmt* o, struct c8script* script,
 
 static int c8decl_parse_mode(struct c8stmt* o)
 {
-  struct c8decl* co = to_c8decl(o);
-  assert(co);
-  return (co->seq == 0 ? C8_PARSEMODE_NAME : C8_PARSEMODE_STATEMENT);
+  struct c8decl* oo = to_c8decl(o);
+  assert(oo);
+  return (oo->seq == 0 ? C8_PARSEMODE_NAME : C8_PARSEMODE_STATEMENT);
 }
 
 static int c8decl_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8decl* co = to_c8decl(o);
-  assert(co);
+  struct c8decl* oo = to_c8decl(o);
+  assert(oo);
   struct c8group* group = find_parent_group(o);
   if (!group) return C8_RUN_ERROR;
   
   struct c8eval* eval = c8script_eval(script);
-  struct c8obj* init = c8eval_expr(eval, c8buf_str(&co->initialiser));
+  struct c8obj* init = c8eval_expr(eval, c8buf_str(&oo->initialiser));
   struct c8ctx* ctx = c8group_ctx(group);
-  c8ctx_add(ctx, c8buf_str(&co->name), init);
+  c8ctx_add(ctx, c8buf_str(&oo->name), init);
 
   return C8_RUN_NORMAL;
 }
@@ -115,11 +115,11 @@ struct c8decl* to_c8decl(struct c8stmt* o)
 
 struct c8decl* c8decl_create()
 {
-  struct c8decl* co = malloc(sizeof(struct c8decl));
-  co->base.imp = &c8decl_imp;
-  co->base.parent = 0;
-  co->seq = 0;
-  c8buf_init(&co->name);
-  c8buf_init(&co->initialiser);
-  return co;
+  struct c8decl* oo = malloc(sizeof(struct c8decl));
+  oo->base.imp = &c8decl_imp;
+  oo->base.parent = 0;
+  oo->seq = 0;
+  c8buf_init(&oo->name);
+  c8buf_init(&oo->initialiser);
+  return oo;
 }

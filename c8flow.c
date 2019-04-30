@@ -44,23 +44,23 @@ struct c8flow {
 
 static void c8flow_destroy(struct c8stmt* o)
 {
-  struct c8flow* fo = to_c8flow(o);
-  assert(fo);
-  c8buf_clear(&fo->expr);
-  free(fo);
+  struct c8flow* oo = to_c8flow(o);
+  assert(oo);
+  c8buf_clear(&oo->expr);
+  free(oo);
 }
 
 static int c8flow_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
   c8debug(C8_DEBUG_INFO, "c8flow_parse: %s", token);
-  struct c8flow* fo = to_c8flow(o);
-  assert(fo);
+  struct c8flow* oo = to_c8flow(o);
+  assert(oo);
 
-  switch (++fo->seq) {
+  switch (++oo->seq) {
   case 1:
-    c8buf_clear(&fo->expr);
-    c8buf_init_str(&fo->expr, token);
+    c8buf_clear(&oo->expr);
+    c8buf_init_str(&oo->expr, token);
     break;
 
   default:
@@ -72,26 +72,26 @@ static int c8flow_parse(struct c8stmt* o, struct c8script* script,
 
 static int c8flow_parse_mode(struct c8stmt* o)
 {
-  struct c8flow* fo = to_c8flow(o);
-  assert(fo);
+  struct c8flow* oo = to_c8flow(o);
+  assert(oo);
   return C8_PARSEMODE_STATEMENT;
 }
 
 static int c8flow_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8flow* fo = to_c8flow(o);
-  assert(fo);
+  struct c8flow* oo = to_c8flow(o);
+  assert(oo);
 
-  if (fo->flow == C8_RUN_RETURN) {
+  if (oo->flow == C8_RUN_RETURN) {
     struct c8obj* retval = 0;
-    if (c8buf_len(&fo->expr)) {
+    if (c8buf_len(&oo->expr)) {
       struct c8eval* eval = c8script_eval(script);
-      retval = c8eval_expr(eval, c8buf_str(&fo->expr));
+      retval = c8eval_expr(eval, c8buf_str(&oo->expr));
     }
     c8script_give_ret(script, retval);
   }
 
-  return fo->flow;
+  return oo->flow;
 }
 
 static const struct c8stmt_imp c8flow_imp = {
@@ -109,11 +109,11 @@ struct c8flow* to_c8flow(struct c8stmt* o)
 
 struct c8flow* c8flow_create(int flow)
 {
-  struct c8flow* fo = malloc(sizeof(struct c8flow));
-  fo->base.imp = &c8flow_imp;
-  fo->base.parent = 0;
-  fo->seq = 0;
-  fo->flow = flow;
-  c8buf_init(&fo->expr);
-  return fo;
+  struct c8flow* oo = malloc(sizeof(struct c8flow));
+  oo->base.imp = &c8flow_imp;
+  oo->base.parent = 0;
+  oo->seq = 0;
+  oo->flow = flow;
+  c8buf_init(&oo->expr);
+  return oo;
 }

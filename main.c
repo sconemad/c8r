@@ -142,9 +142,9 @@ int main(int argc, char* argv[])
   ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);
-  c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print, 0));
-  c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run, 0));
-  c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug, 0));
+  c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print));
+  c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run));
+  c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug));
 
   int ret = 0;
   if (argc == 2) {

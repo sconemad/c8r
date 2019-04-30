@@ -36,17 +36,17 @@ struct c8map* c8map_create();
 
 /** Allow iteration through map contents
  */
-int c8map_size(const struct c8map* mo);
-struct c8obj* c8map_at(struct c8map* mo, int i, struct c8buf* key);
+int c8map_size(const struct c8map* oo);
+struct c8obj* c8map_at(struct c8map* oo, int i, struct c8buf* key);
 
 /** Get list of map keys
  */
-struct c8list* c8map_keys(const struct c8map* mo);
+struct c8list* c8map_keys(const struct c8map* oo);
 
 /** Lookup by key
  */
-struct c8obj* c8map_lookup(struct c8map* mo, const char* key);
+struct c8obj* c8map_lookup(struct c8map* oo, const char* key);
 
 /** Set by key
  */
-void c8map_set(struct c8map* mo, const char* key, struct c8obj* value);
+void c8map_set(struct c8map* oo, const char* key, struct c8obj* value);

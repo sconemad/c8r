@@ -45,35 +45,35 @@ struct c8cond {
 
 static void c8cond_destroy(struct c8stmt* o)
 {
-  struct c8cond* co = to_c8cond(o);
-  assert(co);
-  c8buf_clear(&co->condition);
-  c8stmt_destroy(co->true_stmt);
-  c8stmt_destroy(co->false_stmt);
-  free(co);
+  struct c8cond* oo = to_c8cond(o);
+  assert(oo);
+  c8buf_clear(&oo->condition);
+  c8stmt_destroy(oo->true_stmt);
+  c8stmt_destroy(oo->false_stmt);
+  free(oo);
 }
 
 static int c8cond_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
   c8debug(C8_DEBUG_INFO, "c8cond_parse: %s", token);
-  struct c8cond* co = to_c8cond(o);
-  assert(co);
+  struct c8cond* oo = to_c8cond(o);
+  assert(oo);
 
-  switch (++co->seq) {
+  switch (++oo->seq) {
   case 1:
-    c8buf_clear(&co->condition);
-    c8buf_init_str(&co->condition, token);
+    c8buf_clear(&oo->condition);
+    c8buf_init_str(&oo->condition, token);
     break;
 
   case 2:
     if (strcmp(token, "else") == 0) {
       // Empty true statement
-      ++co->seq;
+      ++oo->seq;
       break;
     }
-    co->true_stmt = c8script_parse_token(script, token);
-    if (co->true_stmt) c8stmt_set_parent(co->true_stmt, o);
+    oo->true_stmt = c8script_parse_token(script, token);
+    if (oo->true_stmt) c8stmt_set_parent(oo->true_stmt, o);
     break;
 
   case 3:
@@ -83,8 +83,8 @@ static int c8cond_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   case 4:
-    co->false_stmt = c8script_parse_token(script, token);
-    if (co->false_stmt) c8stmt_set_parent(co->true_stmt, o);
+    oo->false_stmt = c8script_parse_token(script, token);
+    if (oo->false_stmt) c8stmt_set_parent(oo->true_stmt, o);
     break;
 
   default:
@@ -96,23 +96,23 @@ static int c8cond_parse(struct c8stmt* o, struct c8script* script,
 
 static int c8cond_parse_mode(struct c8stmt* o)
 {
-  struct c8cond* co = to_c8cond(o);
-  assert(co);
-  return (co->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
+  struct c8cond* oo = to_c8cond(o);
+  assert(oo);
+  return (oo->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
 }
 
 static int c8cond_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8cond* co = to_c8cond(o);
-  assert(co);
+  struct c8cond* oo = to_c8cond(o);
+  assert(oo);
   int ret = C8_RUN_NORMAL;
   struct c8eval* eval = c8script_eval(script);
-  int cr = c8eval_cond(eval, c8buf_str(&co->condition));
+  int cr = c8eval_cond(eval, c8buf_str(&oo->condition));
   if (cr < 0) return C8_RUN_ERROR;
   if (cr) {
-    if (co->true_stmt) ret = c8stmt_run(co->true_stmt, script);
+    if (oo->true_stmt) ret = c8stmt_run(oo->true_stmt, script);
   } else {
-    if (co->false_stmt) ret = c8stmt_run(co->false_stmt, script);
+    if (oo->false_stmt) ret = c8stmt_run(oo->false_stmt, script);
   }
   return ret;
 }
@@ -132,12 +132,12 @@ struct c8cond* to_c8cond(struct c8stmt* o)
 
 struct c8cond* c8cond_create()
 {
-  struct c8cond* co = malloc(sizeof(struct c8cond));
-  co->base.imp = &c8cond_imp;
-  co->base.parent = 0;
-  co->seq = 0;
-  c8buf_init(&co->condition);
-  co->true_stmt = 0;
-  co->false_stmt = 0;
-  return co;
+  struct c8cond* oo = malloc(sizeof(struct c8cond));
+  oo->base.imp = &c8cond_imp;
+  oo->base.parent = 0;
+  oo->seq = 0;
+  c8buf_init(&oo->condition);
+  oo->true_stmt = 0;
+  oo->false_stmt = 0;
+  return oo;
 }

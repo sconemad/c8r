@@ -47,4 +47,4 @@ struct c8sub* c8sub_create(struct c8subdef* def, struct c8script* script);
 
 /** Call the subroutine
  */
-struct c8obj* c8sub_call(struct c8sub* fo, struct c8list* args);
+struct c8obj* c8sub_call(struct c8sub* oo, struct c8list* args);

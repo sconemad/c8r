@@ -47,34 +47,34 @@ struct c8loop {
 
 static void c8loop_destroy(struct c8stmt* o)
 {
-  struct c8loop* co = to_c8loop(o);
-  assert(co);
-  c8buf_clear(&co->initialiser);
-  c8buf_clear(&co->condition);
-  c8buf_clear(&co->increment);
-  c8stmt_destroy(co->body);
-  free(co);
+  struct c8loop* oo = to_c8loop(o);
+  assert(oo);
+  c8buf_clear(&oo->initialiser);
+  c8buf_clear(&oo->condition);
+  c8buf_clear(&oo->increment);
+  c8stmt_destroy(oo->body);
+  free(oo);
 }
 
-static int parse_loop(struct c8loop* lo, const char* token)
+static int parse_loop(struct c8loop* oo, const char* token)
 {
-  c8buf_clear(&lo->initialiser);
-  c8buf_clear(&lo->condition);
-  c8buf_clear(&lo->increment);
+  c8buf_clear(&oo->initialiser);
+  c8buf_clear(&oo->condition);
+  c8buf_clear(&oo->increment);
 
-  if (lo->type == C8_LOOP_WHILE) {
-    c8buf_init_str(&lo->condition, token);
+  if (oo->type == C8_LOOP_WHILE) {
+    c8buf_init_str(&oo->condition, token);
     
-  } else if (lo->type == C8_LOOP_FOR) {
+  } else if (oo->type == C8_LOOP_FOR) {
     char* orig = strdup(token);
     char* tok = orig;
     const char* a = strsep(&tok, ";");
     const char* b = strsep(&tok, ";");
     const char* c = strsep(&tok, ";");
     
-    if (a) c8buf_init_str(&lo->initialiser, a);
-    if (b) c8buf_init_str(&lo->condition, b);
-    if (c) c8buf_init_str(&lo->increment, c);
+    if (a) c8buf_init_str(&oo->initialiser, a);
+    if (b) c8buf_init_str(&oo->condition, b);
+    if (c) c8buf_init_str(&oo->increment, c);
     
     free((void*)orig);
   }
@@ -86,16 +86,16 @@ static int c8loop_parse(struct c8stmt* o, struct c8script* script,
                         const char* token)
 {
   c8debug(C8_DEBUG_INFO, "c8loop_parse: %s", token);
-  struct c8loop* lo = to_c8loop(o);
-  assert(lo);
+  struct c8loop* oo = to_c8loop(o);
+  assert(oo);
 
-  switch (++lo->seq) {
+  switch (++oo->seq) {
   case 1:
-    return parse_loop(lo, token);
+    return parse_loop(oo, token);
 
   case 2:
-    lo->body = c8script_parse_token(script, token);
-    if (lo->body) c8stmt_set_parent(lo->body, o);
+    oo->body = c8script_parse_token(script, token);
+    if (oo->body) c8stmt_set_parent(oo->body, o);
     break;
 
   default:
@@ -107,33 +107,33 @@ static int c8loop_parse(struct c8stmt* o, struct c8script* script,
 
 static int c8loop_parse_mode(struct c8stmt* o)
 {
-  struct c8loop* lo = to_c8loop(o);
-  assert(lo);
-  return (lo->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
+  struct c8loop* oo = to_c8loop(o);
+  assert(oo);
+  return (oo->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
 }
 
 static int c8loop_run(struct c8stmt* o, struct c8script* script)
 {
-  struct c8loop* lo = to_c8loop(o);
-  assert(lo);
+  struct c8loop* oo = to_c8loop(o);
+  assert(oo);
   int ret = C8_RUN_NORMAL; 
   struct c8eval* eval = c8script_eval(script);
 
   // Run initialiser
-  if (c8buf_str(&lo->initialiser)) {
-    struct c8obj* r = c8eval_expr(eval, c8buf_str(&lo->initialiser));
+  if (c8buf_str(&oo->initialiser)) {
+    struct c8obj* r = c8eval_expr(eval, c8buf_str(&oo->initialiser));
     c8obj_unref(r);
   }
 
   while (1) {
     // Evaluate condition
-    int cr = c8eval_cond(eval, c8buf_str(&lo->condition));
+    int cr = c8eval_cond(eval, c8buf_str(&oo->condition));
     if (cr < 0) return C8_RUN_ERROR;
     if (cr == 0) break;
 
     // Run body
-    if (lo->body) {
-      ret = c8stmt_run(lo->body, script);
+    if (oo->body) {
+      ret = c8stmt_run(oo->body, script);
       if (ret == C8_RUN_ERROR ||
           ret == C8_RUN_RETURN) {
         break;
@@ -148,8 +148,8 @@ static int c8loop_run(struct c8stmt* o, struct c8script* script)
     }
 
     // Run increment
-    if (c8buf_str(&lo->increment)) {
-      struct c8obj* r = c8eval_expr(eval, c8buf_str(&lo->increment));
+    if (c8buf_str(&oo->increment)) {
+      struct c8obj* r = c8eval_expr(eval, c8buf_str(&oo->increment));
       c8obj_unref(r);
     }
 
@@ -172,14 +172,14 @@ struct c8loop* to_c8loop(struct c8stmt* o)
 
 struct c8loop* c8loop_create(int type)
 {
-  struct c8loop* lo = malloc(sizeof(struct c8loop));
-  lo->base.imp = &c8loop_imp;
-  lo->base.parent = 0;
-  lo->seq = 0;
-  lo->type = type;
-  c8buf_init(&lo->initialiser);
-  c8buf_init(&lo->condition);
-  c8buf_init(&lo->increment);
-  lo->body = 0;
-  return lo;
+  struct c8loop* oo = malloc(sizeof(struct c8loop));
+  oo->base.imp = &c8loop_imp;
+  oo->base.parent = 0;
+  oo->seq = 0;
+  oo->type = type;
+  c8buf_init(&oo->initialiser);
+  c8buf_init(&oo->condition);
+  c8buf_init(&oo->increment);
+  oo->body = 0;
+  return oo;
 }

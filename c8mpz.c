@@ -45,30 +45,30 @@ struct c8mpz* c8mpz_create_mpz(const mpz_t value);
 
 static void c8mpz_destroy(struct c8obj* o)
 {
-  struct c8mpz* no = to_c8mpz(o);
-  assert(no);
-  mpz_clear(no->value);
-  free(no);
+  struct c8mpz* oo = to_c8mpz(o);
+  assert(oo);
+  mpz_clear(oo->value);
+  free(oo);
 }
 
 static struct c8obj* c8mpz_copy(const struct c8obj* o)
 {
-  const struct c8mpz* no = to_const_c8mpz(o);
-  assert(no);
-  return (struct c8obj*)c8mpz_create_mpz(no->value);
+  const struct c8mpz* oo = to_const_c8mpz(o);
+  assert(oo);
+  return (struct c8obj*)c8mpz_create_mpz(oo->value);
 }
 
 static int c8mpz_int(const struct c8obj* o)
 {
-  const struct c8mpz* no = to_const_c8mpz(o);
-  assert(no);
-  return (int)mpz_get_si(no->value);
+  const struct c8mpz* oo = to_const_c8mpz(o);
+  assert(oo);
+  return (int)mpz_get_si(oo->value);
 }
 
 static void c8mpz_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8mpz* no = to_const_c8mpz(o);
-  assert(no);
+  const struct c8mpz* oo = to_const_c8mpz(o);
+  assert(oo);
   int base = 10;
   switch (f & C8_FMT_MASK_BASE) {
     case C8_FMT_BIN: base = 2; break;
@@ -76,7 +76,7 @@ static void c8mpz_str(const struct c8obj* o, struct c8buf* buf, int f)
     case C8_FMT_HEX: base = 16; break;
   }
 
-  char* cs = mpz_get_str(0, base, no->value);
+  char* cs = mpz_get_str(0, base, oo->value);
   if (cs) {
     switch (base) {
       case 2: c8buf_append_str(buf, "0b"); break;
@@ -88,111 +88,111 @@ static void c8mpz_str(const struct c8obj* o, struct c8buf* buf, int f)
   }
 }
 
-static struct c8obj* c8mpz_op_mpfr(struct c8mpz* no, int op, struct c8obj* p)
+static struct c8obj* c8mpz_op_mpfr(struct c8mpz* oo, int op, struct c8obj* p)
 {
   // Promote to mpfr to perform the op
-  struct c8mpfr* fo = c8mpfr_create_c8obj((struct c8obj*)no);
+  struct c8mpfr* fo = c8mpfr_create_c8obj((struct c8obj*)oo);
   struct c8obj* r = c8obj_op((struct c8obj*)fo, op, p);
   c8obj_unref((struct c8obj*)fo);
   return r;
 }
 
-static struct c8obj* c8mpz_binary_op(struct c8mpz* no, int op,
+static struct c8obj* c8mpz_binary_op(struct c8mpz* oo, int op,
                                      struct c8mpz* np)
 {
   switch (op) {
     case C8_OP_ADD: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_add(nr->value, no->value, np->value);
+      mpz_add(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_SUBTRACT: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_sub(nr->value, no->value, np->value);
+      mpz_sub(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_MULTIPLY: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_mul(nr->value, no->value, np->value);
+      mpz_mul(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_DIVIDE: {
-      if (mpz_divisible_p(no->value, np->value)) {
+      if (mpz_divisible_p(oo->value, np->value)) {
         struct c8mpz* nr = c8mpz_create();
-        mpz_tdiv_q(nr->value, no->value, np->value);
+        mpz_tdiv_q(nr->value, oo->value, np->value);
         return (struct c8obj*)nr;
       }
       // Do non-int divide as mpfr
-      return c8mpz_op_mpfr(no, op, (struct c8obj*)np);
+      return c8mpz_op_mpfr(oo, op, (struct c8obj*)np);
     }
     case C8_OP_MODULUS: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_tdiv_r(nr->value, no->value, np->value);
+      mpz_tdiv_r(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_POWER: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_pow_ui(nr->value, no->value, mpz_get_ui(np->value));
+      mpz_pow_ui(nr->value, oo->value, mpz_get_ui(np->value));
       return (struct c8obj*)nr;
     }
     case C8_OP_BIT_OR: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_ior(nr->value, no->value, np->value);
+      mpz_ior(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_BIT_XOR: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_xor(nr->value, no->value, np->value);
+      mpz_xor(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_BIT_AND: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_and(nr->value, no->value, np->value);
+      mpz_and(nr->value, oo->value, np->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_SHIFT_LEFT: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_mul_2exp(nr->value, no->value, mpz_get_si(np->value));
+      mpz_mul_2exp(nr->value, oo->value, mpz_get_si(np->value));
       return (struct c8obj*)nr;
     }
     case C8_OP_SHIFT_RIGHT: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_tdiv_q_2exp(nr->value, no->value, mpz_get_si(np->value));
+      mpz_tdiv_q_2exp(nr->value, oo->value, mpz_get_si(np->value));
       return (struct c8obj*)nr;
     }
 
     case C8_OP_EQUALITY:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) == 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) == 0);
     case C8_OP_INEQUALITY:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) != 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) != 0);
     case C8_OP_GREATER:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) > 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) > 0);
     case C8_OP_LESS:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) < 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) < 0);
     case C8_OP_GREATER_OR_EQUAL:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) >= 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) >= 0);
     case C8_OP_LESS_OR_EQUAL:
-      return (struct c8obj*)c8bool_create(mpz_cmp(no->value, np->value) <= 0);
+      return (struct c8obj*)c8bool_create(mpz_cmp(oo->value, np->value) <= 0);
 
     case C8_OP_ASSIGN: {
-      mpz_set(no->value, np->value);
-      return c8obj_ref((struct c8obj*)no);
+      mpz_set(oo->value, np->value);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_ADD_ASSIGN: {
-      mpz_add(no->value, no->value, np->value);
-      return c8obj_ref((struct c8obj*)no);
+      mpz_add(oo->value, oo->value, np->value);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_SUBTRACT_ASSIGN: {
-      mpz_sub(no->value, no->value, np->value);
-      return c8obj_ref((struct c8obj*)no);
+      mpz_sub(oo->value, oo->value, np->value);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_MULTIPLY_ASSIGN: {
-      mpz_mul(no->value, no->value, np->value);
-      return c8obj_ref((struct c8obj*)no);
+      mpz_mul(oo->value, oo->value, np->value);
+      return c8obj_ref((struct c8obj*)oo);
     }
     case C8_OP_DIVIDE_ASSIGN: {
-      mpz_tdiv_q(no->value, no->value, np->value);
-      return c8obj_ref((struct c8obj*)no);
+      mpz_tdiv_q(oo->value, oo->value, np->value);
+      return c8obj_ref((struct c8obj*)oo);
     }
   }
   return 0;
@@ -200,14 +200,14 @@ static struct c8obj* c8mpz_binary_op(struct c8mpz* no, int op,
 
 static struct c8obj* c8mpz_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8mpz* no = to_c8mpz(o);
-  assert(no);
+  struct c8mpz* oo = to_c8mpz(o);
+  assert(oo);
 
   if (op == C8_OP_LOOKUP && p) {
     struct c8buf nb; c8buf_init(&nb); c8obj_str(p, &nb, 0);
     const char* name = c8buf_str(&nb);
     struct c8func* fn = 0;
-    if (strcmp("abs", name)==0) fn = c8func_create(c8mpz_abs, o);
+    if (strcmp("abs", name)==0) fn = c8func_create_method(c8mpz_abs, o);
     c8buf_clear(&nb);
     return (struct c8obj*)fn;
   }
@@ -215,50 +215,50 @@ static struct c8obj* c8mpz_op(struct c8obj* o, int op, struct c8obj* p)
   switch (op) {
     case C8_OP_POSITIVE: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_set(nr->value, no->value);
+      mpz_set(nr->value, oo->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_NEGATIVE: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_neg(nr->value, no->value);
+      mpz_neg(nr->value, oo->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_BIT_NOT: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_com(nr->value, no->value);
+      mpz_com(nr->value, oo->value);
       return (struct c8obj*)nr;
     }
     case C8_OP_PRE_INC: {
-      mpz_add_ui(no->value, no->value, 1);
+      mpz_add_ui(oo->value, oo->value, 1);
       c8obj_ref(o);
       return o;
     }
     case C8_OP_PRE_DEC: {
-      mpz_sub_ui(no->value, no->value, 1);
+      mpz_sub_ui(oo->value, oo->value, 1);
       c8obj_ref(o);
       return o;
     }
     case C8_OP_FACTORIAL: {
       struct c8mpz* nr = c8mpz_create();
-      mpz_fac_ui(nr->value, mpz_get_ui(no->value));
+      mpz_fac_ui(nr->value, mpz_get_ui(oo->value));
       return (struct c8obj*)nr;
     }
     case C8_OP_POST_INC: {
-      struct c8mpz* nr = c8mpz_create_mpz(no->value);
-      mpz_add_ui(no->value, no->value, 1);
+      struct c8mpz* nr = c8mpz_create_mpz(oo->value);
+      mpz_add_ui(oo->value, oo->value, 1);
       return (struct c8obj*)nr;
     }
     case C8_OP_POST_DEC: {
-      struct c8mpz* nr = c8mpz_create_mpz(no->value);
-      mpz_sub_ui(no->value, no->value, 1);
+      struct c8mpz* nr = c8mpz_create_mpz(oo->value);
+      mpz_sub_ui(oo->value, oo->value, 1);
       return (struct c8obj*)nr;
     }
   }
 
   struct c8mpz* np = to_c8mpz(p);
-  if (np) return c8mpz_binary_op(no, op, np);
+  if (np) return c8mpz_binary_op(oo, op, np);
 
-  return c8mpz_op_mpfr(no, op, p);
+  return c8mpz_op_mpfr(oo, op, p);
 }
 
 static const struct c8obj_imp c8mpz_imp = {
@@ -282,38 +282,38 @@ struct c8mpz* to_c8mpz(struct c8obj* o)
 
 struct c8mpz* c8mpz_create()
 {
-  struct c8mpz* no = malloc(sizeof(struct c8mpz));
-  assert(no);
-  no->base.refs = 1;
-  no->base.imp = &c8mpz_imp;
-  mpz_init(no->value);
-  return no;
+  struct c8mpz* oo = malloc(sizeof(struct c8mpz));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8mpz_imp;
+  mpz_init(oo->value);
+  return oo;
 }
 
 struct c8mpz* c8mpz_create_mpz(const mpz_t value)
 {
-  struct c8mpz* no = c8mpz_create();
-  mpz_set(no->value, value);
-  return no;
+  struct c8mpz* oo = c8mpz_create();
+  mpz_set(oo->value, value);
+  return oo;
 }
 
 struct c8mpz* c8mpz_create_int(int value)
 {
-  struct c8mpz* no = c8mpz_create();
-  mpz_set_si(no->value, value);
-  return no;
+  struct c8mpz* oo = c8mpz_create();
+  mpz_set_si(oo->value, value);
+  return oo;
 }
 
 struct c8mpz* c8mpz_create_double(double value)
 {
-  struct c8mpz* no = c8mpz_create();
-  mpz_set_d(no->value, value);
-  return no;
+  struct c8mpz* oo = c8mpz_create();
+  mpz_set_d(oo->value, value);
+  return oo;
 }
 
 struct c8mpz* c8mpz_create_str(const char* str)
 {
-  struct c8mpz* no = c8mpz_create();
+  struct c8mpz* oo = c8mpz_create();
   int len = strlen(str);
   int base = 10;
   if (len > 2 && str[0] == '0') {
@@ -324,16 +324,16 @@ struct c8mpz* c8mpz_create_str(const char* str)
       case 'x': base = 16; str+=2; break;
     }
   }
-  mpz_set_str(no->value, str, base);
-  return no;
+  mpz_set_str(oo->value, str, base);
+  return oo;
 }
 
 void c8mpz_init_ctx(struct c8ctx* ctx)
 {
-  c8ctx_add(ctx, "abs", (struct c8obj*)c8func_create(c8mpz_abs, 0));
-  c8ctx_add(ctx, "gcd", (struct c8obj*)c8func_create(c8mpz_gcd, 0));
-  c8ctx_add(ctx, "lcm", (struct c8obj*)c8func_create(c8mpz_lcm, 0));
-  c8ctx_add(ctx, "fib", (struct c8obj*)c8func_create(c8mpz_fib, 0));
+  c8ctx_add(ctx, "abs", (struct c8obj*)c8func_create(c8mpz_abs));
+  c8ctx_add(ctx, "gcd", (struct c8obj*)c8func_create(c8mpz_gcd));
+  c8ctx_add(ctx, "lcm", (struct c8obj*)c8func_create(c8mpz_lcm));
+  c8ctx_add(ctx, "fib", (struct c8obj*)c8func_create(c8mpz_fib));
 }
 
 struct c8obj* c8mpz_abs(struct c8list* args)

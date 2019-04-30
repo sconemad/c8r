@@ -32,31 +32,31 @@ struct c8error {
 
 static void c8error_destroy(struct c8obj* o)
 {
-  struct c8error* eo = to_c8error(o);
-  assert(eo);
-  free(eo);
+  struct c8error* oo = to_c8error(o);
+  assert(oo);
+  free(oo);
 }
 
 static struct c8obj* c8error_copy(const struct c8obj* o)
 {
-  const struct c8error* eo = to_const_c8error(o);
-  assert(eo);
-  return (struct c8obj*)c8error_create(eo->code);
+  const struct c8error* oo = to_const_c8error(o);
+  assert(oo);
+  return (struct c8obj*)c8error_create(oo->code);
 }
 
 static int c8error_int(const struct c8obj* o)
 {
-  const struct c8error* eo = to_const_c8error(o);
-  assert(eo);
+  const struct c8error* oo = to_const_c8error(o);
+  assert(oo);
   return 0; // Errors are always zero/false
 }
 
 static void c8error_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8error* eo = to_const_c8error(o);
-  assert(eo);
-  c8buf_append_fmt(buf, "error(%d): ", eo->code);
-  switch (eo->code) {
+  const struct c8error* oo = to_const_c8error(o);
+  assert(oo);
+  c8buf_append_fmt(buf, "error(%d): ", oo->code);
+  switch (oo->code) {
     case C8_ERROR_UNDEFINED_NAME:
       c8buf_append_str(buf, "undefined name"); break;
     case C8_ERROR_ARGUMENT:
@@ -74,8 +74,8 @@ static void c8error_str(const struct c8obj* o, struct c8buf* buf, int f)
 
 static struct c8obj* c8error_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8error* eo = to_c8error(o);
-  assert(eo);
+  struct c8error* oo = to_c8error(o);
+  assert(oo);
   return 0;
 }
 
@@ -100,22 +100,22 @@ struct c8error* to_c8error(struct c8obj* o)
 
 struct c8error* c8error_create(int code)
 {
-  struct c8error* eo = malloc(sizeof(struct c8error));
-  assert(eo);
-  eo->base.refs = 1;
-  eo->base.imp = &c8error_imp;
-  eo->code = code;
-  return eo;
+  struct c8error* oo = malloc(sizeof(struct c8error));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8error_imp;
+  oo->code = code;
+  return oo;
 }
 
-void c8error_set(struct c8error* eo, int code)
+void c8error_set(struct c8error* oo, int code)
 {
-  assert(eo);
-  eo->code = code;
+  assert(oo);
+  oo->code = code;
 }
 
-int c8error_code(const struct c8error* eo)
+int c8error_code(const struct c8error* oo)
 {
-  assert(eo);
-  return eo->code;
+  assert(oo);
+  return oo->code;
 }

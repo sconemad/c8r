@@ -43,27 +43,27 @@ struct c8map {
 
 static void c8map_destroy(struct c8obj* o)
 {
-  struct c8map* mo = to_c8map(o);
-  assert(mo);
-  int size = c8vec_size(&mo->vec);
+  struct c8map* oo = to_c8map(o);
+  assert(oo);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct entry* e = (struct entry*)c8vec_at(&mo->vec, i);
+    struct entry* e = (struct entry*)c8vec_at(&oo->vec, i);
     c8buf_clear(&e->key);
     c8obj_unref(e->value);
     free(e);
   }
-  c8vec_clear(&mo->vec);
-  free(mo);
+  c8vec_clear(&oo->vec);
+  free(oo);
 }
 
 static struct c8obj* c8map_copy(const struct c8obj* o)
 {
-  const struct c8map* mo = to_const_c8map(o);
-  assert(mo);
+  const struct c8map* oo = to_const_c8map(o);
+  assert(oo);
   struct c8map* mc = c8map_create();
-  int size = c8vec_size(&mo->vec);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    const struct entry* e = (const struct entry*)c8vec_const_at(&mo->vec, i);
+    const struct entry* e = (const struct entry*)c8vec_const_at(&oo->vec, i);
     struct c8obj* vc = e->value ? c8obj_copy(e->value) : 0;
     c8map_set(mc, c8buf_str(&e->key), vc);
     c8obj_unref(vc);
@@ -73,20 +73,20 @@ static struct c8obj* c8map_copy(const struct c8obj* o)
 
 static int c8map_int(const struct c8obj* o)
 {
-  const struct c8map* mo = to_const_c8map(o);
-  assert(mo);
-  return c8vec_size(&mo->vec);
+  const struct c8map* oo = to_const_c8map(o);
+  assert(oo);
+  return c8vec_size(&oo->vec);
 }
 
 static void c8map_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8map* mo = to_const_c8map(o);
-  assert(mo);
+  const struct c8map* oo = to_const_c8map(o);
+  assert(oo);
   c8buf_append_str(buf, "{");
-  int size = c8vec_size(&mo->vec);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
     if (i!=0) c8buf_append_str(buf, ",");
-    const struct entry* e = (const struct entry*)c8vec_const_at(&mo->vec, i);
+    const struct entry* e = (const struct entry*)c8vec_const_at(&oo->vec, i);
     c8buf_append_buf(buf, &e->key);
     c8buf_append_str(buf, ":");
     if (e->value) c8obj_str(e->value, buf, f);
@@ -96,8 +96,8 @@ static void c8map_str(const struct c8obj* o, struct c8buf* buf, int f)
 
 static struct c8obj* c8map_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8map* mo = to_c8map(o);
-  assert(mo);
+  struct c8map* oo = to_c8map(o);
+  assert(oo);
   //assert(p);
   return 0;
 }
@@ -123,25 +123,25 @@ struct c8map* to_c8map(struct c8obj* o)
 
 struct c8map* c8map_create()
 {
-  struct c8map* mo = malloc(sizeof(struct c8map));
-  assert(mo);
-  mo->base.refs = 1;
-  mo->base.imp = &c8map_imp;
-  c8vec_init(&mo->vec);
-  return mo;
+  struct c8map* oo = malloc(sizeof(struct c8map));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8map_imp;
+  c8vec_init(&oo->vec);
+  return oo;
 }
 
-int c8map_size(const struct c8map* mo)
+int c8map_size(const struct c8map* oo)
 {
-  assert(mo);
-  return c8vec_size(&mo->vec);
+  assert(oo);
+  return c8vec_size(&oo->vec);
 }
 
 
-struct c8obj* c8map_at(struct c8map* mo, int i, struct c8buf* key)
+struct c8obj* c8map_at(struct c8map* oo, int i, struct c8buf* key)
 {
-  assert(mo);
-  struct entry* e = (struct entry*)c8vec_at(&mo->vec, i);
+  assert(oo);
+  struct entry* e = (struct entry*)c8vec_at(&oo->vec, i);
   if (e) {
     if (key) c8buf_append_buf(key, &e->key);
     if (e->value) return c8obj_ref(e->value);
@@ -149,13 +149,13 @@ struct c8obj* c8map_at(struct c8map* mo, int i, struct c8buf* key)
   return 0;
 }
 
-struct c8list* c8map_keys(const struct c8map* mo)
+struct c8list* c8map_keys(const struct c8map* oo)
 {
-  assert(mo);
+  assert(oo);
   struct c8list* kl = c8list_create();
-  int size = c8vec_size(&mo->vec);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    const struct entry* e = (const struct entry*)c8vec_const_at(&mo->vec, i);
+    const struct entry* e = (const struct entry*)c8vec_const_at(&oo->vec, i);
     struct c8obj* k = (struct c8obj*)c8string_create_buf(&e->key);
     c8list_push_back(kl, k);
     c8obj_unref(k);
@@ -163,12 +163,12 @@ struct c8list* c8map_keys(const struct c8map* mo)
   return kl;
 }
 
-struct c8obj* c8map_lookup(struct c8map* mo, const char* key)
+struct c8obj* c8map_lookup(struct c8map* oo, const char* key)
 {
-  assert(mo);
-  int size = c8vec_size(&mo->vec);
+  assert(oo);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct entry* e = (struct entry*)c8vec_at(&mo->vec, i);
+    struct entry* e = (struct entry*)c8vec_at(&oo->vec, i);
     if (strcmp(c8buf_str(&e->key), key) == 0) {
       if (e->value) return c8obj_ref(e->value);
       return 0;
@@ -177,12 +177,12 @@ struct c8obj* c8map_lookup(struct c8map* mo, const char* key)
   return 0;
 }
 
-void c8map_set(struct c8map* mo, const char* key, struct c8obj* value)
+void c8map_set(struct c8map* oo, const char* key, struct c8obj* value)
 {
-  assert(mo);
-  int size = c8vec_size(&mo->vec);
+  assert(oo);
+  int size = c8vec_size(&oo->vec);
   for (int i=0; i<size; ++i) {
-    struct entry* e = (struct entry*)c8vec_at(&mo->vec, i);
+    struct entry* e = (struct entry*)c8vec_at(&oo->vec, i);
     if (strcmp(c8buf_str(&e->key), key) == 0) {
       c8obj_unref(e->value);
       e->value = value ? c8obj_ref(value) : 0;
@@ -193,5 +193,5 @@ void c8map_set(struct c8map* mo, const char* key, struct c8obj* value)
   struct entry* e = (struct entry*)malloc(sizeof (struct entry));
   c8buf_init_str(&e->key, key);
   e->value = value ? c8obj_ref(value) : 0;
-  c8vec_push_back(&mo->vec, e);
+  c8vec_push_back(&oo->vec, e);
 }

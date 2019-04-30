@@ -32,13 +32,13 @@ struct c8list* to_c8list(struct c8obj* o);
  */
 struct c8list* c8list_create();
 
-int c8list_size(const struct c8list* lo);
-struct c8obj* c8list_at(struct c8list* lo, int i);
+int c8list_size(const struct c8list* oo);
+struct c8obj* c8list_at(struct c8list* oo, int i);
 
 /** Stack-like access
  */
-void c8list_push_back(struct c8list* lo, struct c8obj* p);
-void c8list_pop_back(struct c8list* lo);
+void c8list_push_back(struct c8list* oo, struct c8obj* p);
+void c8list_pop_back(struct c8list* oo);
 
-void c8list_push_front(struct c8list* lo, struct c8obj* p);
-void c8list_pop_front(struct c8list* lo);
+void c8list_push_front(struct c8list* oo, struct c8obj* p);
+void c8list_pop_front(struct c8list* oo);

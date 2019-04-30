@@ -36,40 +36,40 @@ struct c8func {
 
 static void c8func_destroy(struct c8obj* o)
 {
-  struct c8func* fo = to_c8func(o);
-  assert(fo);
-  c8obj_unref(fo->object);
-  free(fo);
+  struct c8func* oo = to_c8func(o);
+  assert(oo);
+  c8obj_unref(oo->object);
+  free(oo);
 }
 
 static struct c8obj* c8func_copy(const struct c8obj* o)
 {
-  const struct c8func* fo = to_const_c8func(o);
-  assert(fo);
-  return (struct c8obj*)c8func_create(fo->func, fo->object);
+  const struct c8func* oo = to_const_c8func(o);
+  assert(oo);
+  return (struct c8obj*)c8func_create_method(oo->func, oo->object);
 }
 
 static int c8func_int(const struct c8obj* o)
 {
-  const struct c8func* fo = to_const_c8func(o);
-  assert(fo);
-  return fo->func || fo->object;
+  const struct c8func* oo = to_const_c8func(o);
+  assert(oo);
+  return oo->func || oo->object;
 }
 
 static void c8func_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8func* fo = to_const_c8func(o);
-  assert(fo);
+  const struct c8func* oo = to_const_c8func(o);
+  assert(oo);
   c8buf_append_str(buf, "function");
 }
 
 static struct c8obj* c8func_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8func* fo = to_c8func(o);
-  assert(fo);
+  struct c8func* oo = to_c8func(o);
+  assert(oo);
   if (C8_OP_LIST == op) {
     struct c8list* args = to_c8list(p);
-    if (args) return c8func_call(fo, args);
+    if (args) return c8func_call(oo, args);
   }
   return 0;
 }
@@ -93,22 +93,28 @@ struct c8func* to_c8func(struct c8obj* o)
   return (struct c8func*)to_const_c8func(o);
 }
 
-struct c8func* c8func_create(c8func_func f, struct c8obj* obj)
+struct c8func* c8func_create(c8func_func f)
 {
   assert(f);
-  struct c8func* fo = malloc(sizeof(struct c8func));
-  assert(fo);
-  fo->base.refs = 1;
-  fo->base.imp = &c8func_imp;
-  fo->func = f;
-  fo->object = 0;
-  if (obj) fo->object = c8obj_ref(obj);
-  return fo;
+  struct c8func* oo = malloc(sizeof(struct c8func));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8func_imp;
+  oo->func = f;
+  oo->object = 0;
+  return oo;
 }
 
-struct c8obj* c8func_call(struct c8func* fo, struct c8list* args)
+struct c8func* c8func_create_method(c8func_func f, struct c8obj* obj)
 {
-  assert(fo);
-  if (fo->object) c8list_push_front(args, fo->object);
-  return (fo->func)(args);
+  struct c8func* oo = c8func_create(f);
+  if (obj) oo->object = c8obj_ref(obj);
+  return oo;
+}
+
+struct c8obj* c8func_call(struct c8func* oo, struct c8list* args)
+{
+  assert(oo);
+  if (oo->object) c8list_push_front(args, oo->object);
+  return (oo->func)(args);
 }

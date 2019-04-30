@@ -38,4 +38,4 @@ struct c8group* c8group_create();
 
 /** Get the context for this group
  */
-struct c8ctx* c8group_ctx(struct c8group* o);
+struct c8ctx* c8group_ctx(struct c8group* oo);

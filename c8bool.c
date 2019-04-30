@@ -33,36 +33,36 @@ struct c8bool {
 
 static void c8bool_destroy(struct c8obj* o)
 {
-  struct c8bool* bo = to_c8bool(o);
-  assert(bo);
-  free(bo);
+  struct c8bool* oo = to_c8bool(o);
+  assert(oo);
+  free(oo);
 }
 
 static struct c8obj* c8bool_copy(const struct c8obj* o)
 {
-  const struct c8bool* bo = to_const_c8bool(o);
-  assert(bo);
-  return (struct c8obj*)c8bool_create(bo->value);
+  const struct c8bool* oo = to_const_c8bool(o);
+  assert(oo);
+  return (struct c8obj*)c8bool_create(oo->value);
 }
 
 static int c8bool_int(const struct c8obj* o)
 {
-  const struct c8bool* bo = to_const_c8bool(o);
-  assert(bo);
-  return bo->value;
+  const struct c8bool* oo = to_const_c8bool(o);
+  assert(oo);
+  return oo->value;
 }
 
 static void c8bool_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
-  const struct c8bool* bo = to_const_c8bool(o);
-  assert(bo);
-  c8buf_append_str(buf, bo->value ? "true" : "false");
+  const struct c8bool* oo = to_const_c8bool(o);
+  assert(oo);
+  c8buf_append_str(buf, oo->value ? "true" : "false");
 }
 
 static struct c8obj* c8bool_op(struct c8obj* o, int op, struct c8obj* p)
 {
-  struct c8bool* bo = to_c8bool(o);
-  assert(bo);
+  struct c8bool* oo = to_c8bool(o);
+  assert(oo);
   return 0;
 }
 
@@ -87,22 +87,22 @@ struct c8bool* to_c8bool(struct c8obj* o)
 
 struct c8bool* c8bool_create(int value)
 {
-  struct c8bool* bo = malloc(sizeof(struct c8bool));
-  assert(bo);
-  bo->base.refs = 1;
-  bo->base.imp = &c8bool_imp;
-  bo->value = value;
-  return bo;
+  struct c8bool* oo = malloc(sizeof(struct c8bool));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8bool_imp;
+  oo->value = value;
+  return oo;
 }
 
-void c8bool_set(struct c8bool* bo, int value)
+void c8bool_set(struct c8bool* oo, int value)
 {
-  assert(bo);
-  bo->value = value;
+  assert(oo);
+  oo->value = value;
 }
 
-int c8bool_value(const struct c8bool* bo)
+int c8bool_value(const struct c8bool* oo)
 {
-  assert(bo);
-  return bo->value;
+  assert(oo);
+  return oo->value;
 }
