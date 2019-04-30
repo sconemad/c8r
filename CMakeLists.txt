@@ -10,7 +10,7 @@ configure_file("${PROJECT_SOURCE_DIR}/c8version.h.in"
 include_directories("${PROJECT_BINARY_DIR}")
 
 add_compile_options(-Wall)
-add_compile_options(-fsanitize=address)
+
 #add_compile_options(-O0)
 #add_compile_options(-g)
 
@@ -34,6 +34,7 @@ if(EMSCRIPTEN)
     ${PROJECT_BINARY_DIR}/../gmp/.libs/libgmp.a)
 
 else()
+  add_compile_options(-fsanitize=address)
   add_executable(c8r main.c)
   target_link_libraries(c8r
     -fsanitize=address

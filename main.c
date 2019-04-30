@@ -63,8 +63,6 @@ int run_interactive()
       printf("%s\n", c8buf_str(&rs));
       c8buf_clear(&rs);
       c8obj_unref(r);
-    } else {
-      printf("null\n");
     }
     free(line);
   }
@@ -90,21 +88,14 @@ int run_script(const char* file)
 
   // parse
   struct c8script* script = c8script_create(ctx);
-  int pr = c8script_parse(script, data);
-  c8debug(C8_DEBUG_INFO, "c8script_parse returned %d", pr);
+  int ret = c8script_parse(script, data);
+  c8debug(C8_DEBUG_INFO, "c8script_parse returned %d", ret);
 
   // run
-  struct c8obj* r = c8script_run(script);
-  struct c8buf rs; c8buf_init(&rs);
-  if (r) {
-    c8obj_str(r, &rs, 0);
-  } else {
-    c8buf_append_str(&rs, "null");
-  }
-  c8debug(C8_DEBUG_INFO, "c8script_run returned %s", c8buf_str(&rs));
-  c8buf_clear(&rs);
-  c8obj_unref(r);
+  ret = c8script_run(script);
+  c8debug(C8_DEBUG_INFO, "c8script_run returned %d", ret);
   c8script_destroy(script);
+  free((void*)data);
   return 0;
 }
 
@@ -117,6 +108,7 @@ struct c8obj* print(struct c8list* args)
   c8obj_str(a, &m, C8_FMT_DEC);
   printf("%s\n", c8buf_str(&m));
   c8buf_clear(&m);
+  c8obj_unref(a);
   return 0;
 }
 
@@ -129,6 +121,7 @@ struct c8obj* run(struct c8list* args)
   c8obj_str(a, &m, C8_FMT_DEC);
   run_script(c8buf_str(&m));
   c8buf_clear(&m);
+  c8obj_unref(a);
   return 0;
 }
 
@@ -144,6 +137,8 @@ struct c8obj* debug(struct c8list* args)
 
 int main(int argc, char* argv[])
 {
+  c8debug_level(C8_DEBUG_DETAIL);
+
   ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);

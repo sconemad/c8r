@@ -33,8 +33,8 @@ typedef int (*c8stmt_parse_func)
 typedef int (*c8stmt_parse_mode_func)
 (struct c8stmt* o);
 
-typedef struct c8obj* (*c8stmt_run_func)
-(struct c8stmt* o, struct c8script* script, int* flow);
+typedef int (*c8stmt_run_func)
+(struct c8stmt* o, struct c8script* script);
 
 struct c8stmt_imp {
   c8stmt_destroy_func destroy;

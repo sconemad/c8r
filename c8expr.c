@@ -49,7 +49,7 @@ static int c8expr_parse(struct c8stmt* o, struct c8script* script,
 {
   struct c8expr* eo = to_c8expr(o);
   assert(eo);
-  return C8_PARSERESULT_POP;
+  return C8_PARSE_POP;
 }
 
 static int c8expr_parse_mode(struct c8stmt* o)
@@ -59,14 +59,16 @@ static int c8expr_parse_mode(struct c8stmt* o)
   return C8_PARSEMODE_STATEMENT;
 }
 
-static struct c8obj* c8expr_run(struct c8stmt* o,
-				struct c8script* script, int* flow)
+static int c8expr_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8expr* eo = to_c8expr(o);
   assert(eo);
   c8debug(C8_DEBUG_INFO, "c8expr_run: %s", c8buf_str(&eo->expr));
   struct c8eval* eval = c8script_eval(script);
-  return c8eval_expr(eval, c8buf_str(&eo->expr));
+  struct c8obj* result = c8eval_expr(eval, c8buf_str(&eo->expr));
+  int ret = c8script_handle_result(script, result);
+  c8obj_unref(result);
+  return ret;
 }
 
 static const struct c8stmt_imp c8expr_imp = {

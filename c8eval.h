@@ -36,6 +36,10 @@ void c8eval_destroy(struct c8eval* o);
  */
 struct c8obj* c8eval_expr(struct c8eval* o, const char* expr);
 
+/** Evaluate a condition
+ */
+int c8eval_cond(struct c8eval* o, const char* expr);
+
 /** Resolver function
  */
 typedef struct c8obj* (*c8eval_resolver_func)

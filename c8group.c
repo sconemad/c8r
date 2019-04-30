@@ -64,14 +64,14 @@ static int c8group_parse(struct c8stmt* o, struct c8script* script,
   assert(go);
 
   if (strcmp(token, "}") == 0) {
-    return C8_PARSERESULT_END;
+    return C8_PARSE_END;
   }
 
   struct c8stmt* sub = c8script_parse_token(script, token);
-  if (!sub) return C8_PARSERESULT_ERROR;
+  if (!sub) return C8_PARSE_ERROR;
   c8stmt_set_parent(sub, o);
   c8vec_push_back(&go->vec, sub);
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8group_parse_mode(struct c8stmt* o)
@@ -92,12 +92,11 @@ static struct c8obj* c8group_resolve(const char* name, void* data)
   return c8group_resolve(name, o->parent);
 }
 
-static struct c8obj* c8group_run(struct c8stmt* o,
-				 struct c8script* script, int* flow)
+static int c8group_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8group* go = to_c8group(o);
   assert(go);
-  struct c8obj* ret = 0;
+  int ret = C8_RUN_NORMAL;
   c8eval_resolver_func save_resolver;
   void* save_resolver_data;
 
@@ -107,13 +106,11 @@ static struct c8obj* c8group_run(struct c8stmt* o,
   int size = c8vec_size(&go->vec);
   for (int i=0; i<size; ++i) {
     struct c8stmt* item = (struct c8stmt*)c8vec_at(&go->vec, i);
-    c8obj_unref(ret);
 
     c8eval_set_resolver(ev, c8group_resolve, o);
-    ret = c8stmt_run(item, script, flow);
+    ret = c8stmt_run(item, script);
 
-    if (ret && to_c8error(ret)) break;
-    if (*flow != C8_FLOW_NORMAL) break;
+    if (ret != C8_RUN_NORMAL) break;
   }
   c8eval_set_resolver(ev, save_resolver, save_resolver_data);
   return ret;

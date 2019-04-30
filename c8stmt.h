@@ -26,10 +26,10 @@ struct c8exec;
 
 void c8stmt_destroy(struct c8stmt* o);
 
-#define C8_PARSERESULT_CONTINUE 0
-#define C8_PARSERESULT_END      1
-#define C8_PARSERESULT_POP      2
-#define C8_PARSERESULT_ERROR    3
+#define C8_PARSE_CONTINUE 0
+#define C8_PARSE_END      1
+#define C8_PARSE_POP      2
+#define C8_PARSE_ERROR    3
 int c8stmt_parse(struct c8stmt* o, struct c8script* script, 
 		 const char* token);
 
@@ -40,8 +40,9 @@ int c8stmt_parse_mode(struct c8stmt* o);
 
 void c8stmt_set_parent(struct c8stmt* o, struct c8stmt* p);
 
-#define C8_FLOW_NORMAL 0
-#define C8_FLOW_RETURN 1
-#define C8_FLOW_LAST   2
-#define C8_FLOW_NEXT   3
-struct c8obj* c8stmt_run(struct c8stmt* o, struct c8script* script, int* flow);
+#define C8_RUN_NORMAL 0
+#define C8_RUN_ERROR  1
+#define C8_RUN_RETURN 2
+#define C8_RUN_LAST   3
+#define C8_RUN_NEXT   4
+int c8stmt_run(struct c8stmt* o, struct c8script* script);

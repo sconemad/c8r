@@ -64,10 +64,10 @@ static int c8flow_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   default:
-    return C8_PARSERESULT_POP;
+    return C8_PARSE_POP;
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8flow_parse_mode(struct c8stmt* o)
@@ -77,21 +77,21 @@ static int c8flow_parse_mode(struct c8stmt* o)
   return C8_PARSEMODE_STATEMENT;
 }
 
-static struct c8obj* c8flow_run(struct c8stmt* o,
-                                struct c8script* script, int* flow)
+static int c8flow_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8flow* fo = to_c8flow(o);
   assert(fo);
-  struct c8obj* ret = 0;
-  struct c8eval* eval = c8script_eval(script);
 
-  if (c8buf_len(&fo->expr)) {
-    ret = c8eval_expr(eval, c8buf_str(&fo->expr));
-    if (ret) c8obj_ref(ret);
+  if (fo->flow == C8_RUN_RETURN) {
+    struct c8obj* retval = 0;
+    if (c8buf_len(&fo->expr)) {
+      struct c8eval* eval = c8script_eval(script);
+      retval = c8eval_expr(eval, c8buf_str(&fo->expr));
+    }
+    c8script_give_ret(script, retval);
   }
 
-  *flow = fo->flow;
-  return ret;
+  return fo->flow;
 }
 
 static const struct c8stmt_imp c8flow_imp = {

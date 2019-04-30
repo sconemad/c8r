@@ -54,8 +54,8 @@ void c8stmt_set_parent(struct c8stmt* o, struct c8stmt* p)
   o->parent = p;
 }
 
-struct c8obj* c8stmt_run(struct c8stmt* o, struct c8script* script, int* flow)
+int c8stmt_run(struct c8stmt* o, struct c8script* script)
 {
   assert(o);
-  return (o->imp->run)(o, script, flow);
+  return (o->imp->run)(o, script);
 }

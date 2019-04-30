@@ -66,19 +66,20 @@ static int parse_loop(struct c8loop* lo, const char* token)
     c8buf_init_str(&lo->condition, token);
     
   } else if (lo->type == C8_LOOP_FOR) {
-    char* temp = strdup(token);
-    const char* a = strsep(&temp, ";");
-    const char* b = strsep(&temp, ";");
-    const char* c = strsep(&temp, ";");
+    char* orig = strdup(token);
+    char* tok = orig;
+    const char* a = strsep(&tok, ";");
+    const char* b = strsep(&tok, ";");
+    const char* c = strsep(&tok, ";");
     
     if (a) c8buf_init_str(&lo->initialiser, a);
     if (b) c8buf_init_str(&lo->condition, b);
     if (c) c8buf_init_str(&lo->increment, c);
     
-    free((void*)temp);
+    free((void*)orig);
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8loop_parse(struct c8stmt* o, struct c8script* script,
@@ -98,10 +99,10 @@ static int c8loop_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   default:
-    return C8_PARSERESULT_POP;
+    return C8_PARSE_POP;
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8loop_parse_mode(struct c8stmt* o)
@@ -111,12 +112,11 @@ static int c8loop_parse_mode(struct c8stmt* o)
   return (lo->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
 }
 
-static struct c8obj* c8loop_run(struct c8stmt* o,
-                                struct c8script* script, int* flow)
+static int c8loop_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8loop* lo = to_c8loop(o);
   assert(lo);
-  struct c8obj* ret = 0; 
+  int ret = C8_RUN_NORMAL; 
   struct c8eval* eval = c8script_eval(script);
 
   // Run initialiser
@@ -127,30 +127,23 @@ static struct c8obj* c8loop_run(struct c8stmt* o,
 
   while (1) {
     // Evaluate condition
-    ret = c8eval_expr(eval, c8buf_str(&lo->condition));
-    if (!ret) return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
-    if (to_c8error(ret)) return ret;
-    
-    struct c8bool* br = to_c8bool(ret);
-    if (!br) {
-      c8obj_unref(ret);
-      return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
-    }
-    int b = c8bool_value(br);
-    c8obj_unref(ret); ret = 0;
-    if (!b) break;
+    int cr = c8eval_cond(eval, c8buf_str(&lo->condition));
+    if (cr < 0) return C8_RUN_ERROR;
+    if (cr == 0) break;
 
     // Run body
     if (lo->body) {
-      ret = c8stmt_run(lo->body, script, flow);
-      if (ret && to_c8error(ret)) return ret;
-      if (*flow == C8_FLOW_RETURN) break;
-      if (*flow == C8_FLOW_LAST) {
-        *flow = C8_FLOW_NORMAL;
+      ret = c8stmt_run(lo->body, script);
+      if (ret == C8_RUN_ERROR ||
+          ret == C8_RUN_RETURN) {
         break;
       }
-      if (*flow == C8_FLOW_NEXT) {
-        *flow = C8_FLOW_NORMAL;
+      if (ret == C8_RUN_LAST) {
+        ret = C8_RUN_NORMAL;
+        break;
+      }
+      if (ret == C8_RUN_NEXT) {
+        ret = C8_RUN_NORMAL;
       }
     }
 

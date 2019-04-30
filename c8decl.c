@@ -72,10 +72,10 @@ static int c8decl_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   default:
-    return C8_PARSERESULT_POP;
+    return C8_PARSE_POP;
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8decl_parse_mode(struct c8stmt* o)
@@ -85,23 +85,19 @@ static int c8decl_parse_mode(struct c8stmt* o)
   return (co->seq == 0 ? C8_PARSEMODE_NAME : C8_PARSEMODE_STATEMENT);
 }
 
-static struct c8obj* c8decl_run(struct c8stmt* o,
-                                struct c8script* script, int* flow)
+static int c8decl_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8decl* co = to_c8decl(o);
   assert(co);
-  struct c8obj* init = 0;
+  struct c8group* group = find_parent_group(o);
+  if (!group) return C8_RUN_ERROR;
+  
   struct c8eval* eval = c8script_eval(script);
+  struct c8obj* init = c8eval_expr(eval, c8buf_str(&co->initialiser));
+  struct c8ctx* ctx = c8group_ctx(group);
+  c8ctx_add(ctx, c8buf_str(&co->name), init);
 
-  init = c8eval_expr(eval, c8buf_str(&co->initialiser));
-  if (init) c8obj_ref(init);
-
-  struct c8group* g = find_parent_group(o);
-  if (g) {
-    struct c8ctx* ctx = c8group_ctx(g);
-    c8ctx_add(ctx, c8buf_str(&co->name), init);
-  }
-  return init;
+  return C8_RUN_NORMAL;
 }
 
 static const struct c8stmt_imp c8decl_imp = {

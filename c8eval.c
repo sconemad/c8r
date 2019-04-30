@@ -497,6 +497,18 @@ struct c8obj* c8eval_expr(struct c8eval* o, const char* expr)
   return ro;
 }
 
+int c8eval_cond(struct c8eval* o, const char* expr)
+{
+  int ret = -1;
+  struct c8obj* ro = c8eval_expr(o, expr);
+  if (ro) {
+    struct c8bool* bo = to_c8bool(ro);
+    if (bo) ret = c8bool_value(bo);
+    c8obj_unref(ro);
+  }
+  return ret;
+}
+
 void c8eval_set_resolver(struct c8eval* o, c8eval_resolver_func resolver, 
                          void* data)
 {

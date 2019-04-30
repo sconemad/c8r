@@ -67,13 +67,14 @@ static void c8subdef_destroy(struct c8stmt* o)
 
 static int parse_arglist(struct c8subdef* oo, const char* token)
 {
-  char* temp = strdup(token);
+  char* orig = strdup(token);
+  char* tok = orig;
   const char* arg;
-  while ((arg = strsep(&temp, " ,")) != 0) {
+  while ((arg = strsep(&tok, " ,")) != 0) {
     if (arg[0]) c8vec_push_back(&oo->args, strdup(arg));
   }
-  free(temp);
-  return C8_PARSERESULT_CONTINUE;
+  free(orig);
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8subdef_parse(struct c8stmt* o, struct c8script* script,
@@ -98,10 +99,10 @@ static int c8subdef_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   default:
-    return C8_PARSERESULT_POP;
+    return C8_PARSE_POP;
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8subdef_parse_mode(struct c8stmt* o)
@@ -115,20 +116,18 @@ static int c8subdef_parse_mode(struct c8stmt* o)
   return C8_PARSEMODE_STATEMENT;
 }
 
-static struct c8obj* c8subdef_run(struct c8stmt* o,
-                                  struct c8script* script, int* flow)
+static int c8subdef_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8subdef* oo = to_c8subdef(o);
   assert(oo);
-
-  struct c8group* g = find_parent_group(o);
-  if (!g) return 0;
+  struct c8group* group = find_parent_group(o);
+  if (!group) return C8_RUN_ERROR;
   
-  struct c8ctx* ctx = c8group_ctx(g);
+  struct c8ctx* ctx = c8group_ctx(group);
   struct c8sub* sub = c8sub_create(oo, script);
   c8ctx_add(ctx, c8buf_str(&oo->name), (struct c8obj*)sub);
 
-  return 0;
+  return C8_RUN_NORMAL;
 }
 
 static const struct c8stmt_imp c8subdef_imp = {
@@ -182,7 +181,7 @@ static int c8sub_int(const struct c8obj* o)
 {
   const struct c8sub* oo = to_const_c8sub(o);
   assert(oo);
-  return (int)oo->def;
+  return (oo->def != 0);
 }
 
 static void c8sub_str(const struct c8obj* o, struct c8buf* buf, int f)
@@ -249,6 +248,6 @@ struct c8obj* c8sub_call(struct c8sub* oo, struct c8list* args)
       c8ctx_add(ctx, name, value);
     }
   } 
-  int flow = C8_FLOW_NORMAL;
-  return c8stmt_run(oo->def->body, oo->script, &flow);
+  c8stmt_run(oo->def->body, oo->script);
+  return c8script_take_ret(oo->script);
 }

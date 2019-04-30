@@ -32,7 +32,13 @@ void evaluate(const char* line)
   struct c8ctx* ctx = c8ctx_create();
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);
-  struct c8val* eval = c8eval_create(ctx);
+
+  struct c8buf ver; c8buf_init(&ver);
+  c8buf_append_fmt(&ver, "%d.%d.%d", C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH); 
+  c8ctx_add(ctx, "version", (struct c8obj*)c8string_create_buf(&ver));
+  c8buf_clear(&ver);
+
+  struct c8eval* eval = c8eval_create(ctx);
 
   struct c8obj* r = c8eval_expr(eval, line);
   if (r) {

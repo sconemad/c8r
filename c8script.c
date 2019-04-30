@@ -33,6 +33,7 @@
 #include "c8vec.h"
 #include "c8debug.h"
 #include "c8stmtimp.h"
+#include "c8error.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +49,7 @@ struct c8script {
   int tokenid;
   struct c8vec stack;
   struct c8eval* eval;
+  struct c8obj* ret;
 };
 
 static int next(struct c8script* o);
@@ -60,6 +62,7 @@ struct c8script* c8script_create(struct c8ctx* global)
   c8buf_init(&o->token);
   c8vec_init(&o->stack);
   o->eval = c8eval_create(global);
+  o->ret = 0;
   return o;
 }
 
@@ -68,12 +71,11 @@ void c8script_destroy(struct c8script* o)
   assert(o);
   c8buf_clear(&o->script);
   c8buf_clear(&o->token);
-  for (int i=0; i<c8vec_size(&o->stack); ++i) {
-    struct c8stmt* s = (struct c8stmt*)c8vec_at(&o->stack, i);
-    c8stmt_destroy(s);
-  }
+  struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
+  if (root) c8stmt_destroy(root);
   c8vec_clear(&o->stack);
   c8eval_destroy(o->eval);
+  c8obj_unref(o->ret);
   free(o);
 }
 
@@ -92,18 +94,18 @@ int c8script_parse(struct c8script* o, const char* script)
     while (1) {
       struct c8stmt* cur = (struct c8stmt*)c8vec_at(&o->stack, -1);
       int pr = c8stmt_parse(cur, o, c8buf_str(&o->token));
-      if (pr == C8_PARSERESULT_POP || pr == C8_PARSERESULT_END) {
+      if (pr == C8_PARSE_POP || pr == C8_PARSE_END) {
 	if (c8vec_size(&o->stack) == 0) {
 	  c8debug(C8_DEBUG_ERROR, "c8script: %d: parse stack underflow", o->line);
 	  return 2;
 	}
 	c8vec_pop_back(&o->stack);
       }
-      if (pr == C8_PARSERESULT_ERROR) {
+      if (pr == C8_PARSE_ERROR) {
 	c8debug(C8_DEBUG_ERROR, "c8script: %d: syntax error", o->line);
 	return 1;
       }
-      if (pr != C8_PARSERESULT_POP) {
+      if (pr != C8_PARSE_POP) {
 	break;
       }
     }
@@ -111,13 +113,12 @@ int c8script_parse(struct c8script* o, const char* script)
   return 0;
 }
 
-struct c8obj* c8script_run(struct c8script* o)
+int c8script_run(struct c8script* o)
 {
   assert(o);
   assert(c8vec_size(&o->stack) > 0);
   struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
-  int flow = C8_FLOW_NORMAL;
-  return c8stmt_run(root, o, &flow);
+  return c8stmt_run(root, o);
 }
 
 #define C8_PARSETOKEN_UNKNOWN 0
@@ -164,11 +165,11 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   case C8_PARSETOKEN_FOR: 
     s = (struct c8stmt*)c8loop_create(C8_LOOP_FOR); break;
   case C8_PARSETOKEN_RETURN: 
-    s = (struct c8stmt*)c8flow_create(C8_FLOW_RETURN); break;
+    s = (struct c8stmt*)c8flow_create(C8_RUN_RETURN); break;
   case C8_PARSETOKEN_BREAK:
-    s = (struct c8stmt*)c8flow_create(C8_FLOW_LAST); break;
+    s = (struct c8stmt*)c8flow_create(C8_RUN_LAST); break;
   case C8_PARSETOKEN_CONTINUE:
-    s = (struct c8stmt*)c8flow_create(C8_FLOW_NEXT); break;
+    s = (struct c8stmt*)c8flow_create(C8_RUN_NEXT); break;
   case C8_PARSETOKEN_VAR:
     s = (struct c8stmt*)c8decl_create(); break;
   case C8_PARSETOKEN_SUB:
@@ -302,4 +303,34 @@ struct c8eval* c8script_eval(struct c8script* o)
 {
   assert(o);
   return o->eval;
+}
+
+int c8script_handle_result(struct c8script* o, struct c8obj* result)
+{
+  assert(o);
+  int ret = C8_RUN_NORMAL;
+  struct c8error* err = to_c8error(result);
+  if (err) {
+    ret = C8_RUN_ERROR;
+    struct c8buf es; c8buf_init(&es);
+    c8obj_str(result, &es, C8_FMT_DEC);
+    c8debug(C8_DEBUG_ERROR, "c8script: %s", c8buf_str(&es));
+    c8buf_clear(&es);
+  }
+  return ret;
+}
+
+void c8script_give_ret(struct c8script* o, struct c8obj* ret)
+{
+  assert(o);
+  c8obj_unref(o->ret);
+  o->ret = ret;
+}
+
+struct c8obj* c8script_take_ret(struct c8script* o)
+{
+  assert(o);
+  struct c8obj* ret = o->ret;
+  o->ret = 0;
+  return ret;
 }

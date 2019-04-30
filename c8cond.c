@@ -78,7 +78,7 @@ static int c8cond_parse(struct c8stmt* o, struct c8script* script,
 
   case 3:
     if (strcmp(token, "else") != 0) {
-      return C8_PARSERESULT_POP;
+      return C8_PARSE_POP;
     }
     break;
 
@@ -88,10 +88,10 @@ static int c8cond_parse(struct c8stmt* o, struct c8script* script,
     break;
 
   default:
-    return C8_PARSERESULT_POP;
+    return C8_PARSE_POP;
   }
 
-  return C8_PARSERESULT_CONTINUE;
+  return C8_PARSE_CONTINUE;
 }
 
 static int c8cond_parse_mode(struct c8stmt* o)
@@ -101,27 +101,18 @@ static int c8cond_parse_mode(struct c8stmt* o)
   return (co->seq == 0 ? C8_PARSEMODE_BRACKETED : C8_PARSEMODE_STATEMENT);
 }
 
-static struct c8obj* c8cond_run(struct c8stmt* o,
-                                struct c8script* script, int* flow)
+static int c8cond_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8cond* co = to_c8cond(o);
   assert(co);
-  struct c8obj* ret = 0;
+  int ret = C8_RUN_NORMAL;
   struct c8eval* eval = c8script_eval(script);
-  struct c8bool* br = 0;
-
-  ret = c8eval_expr(eval, c8buf_str(&co->condition));
-  if (!ret) return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
-  if (to_c8error(ret)) return ret;
-  br = to_c8bool(ret);
-  if (!br) return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
-  
-  if (c8bool_value(br)) {
-    c8obj_unref(ret); ret = 0;
-    if (co->true_stmt) ret = c8stmt_run(co->true_stmt, script, flow);
+  int cr = c8eval_cond(eval, c8buf_str(&co->condition));
+  if (cr < 0) return C8_RUN_ERROR;
+  if (cr) {
+    if (co->true_stmt) ret = c8stmt_run(co->true_stmt, script);
   } else {
-    c8obj_unref(ret); ret = 0;
-    if (co->false_stmt) ret = c8stmt_run(co->false_stmt, script, flow);
+    if (co->false_stmt) ret = c8stmt_run(co->false_stmt, script);
   }
   return ret;
 }
