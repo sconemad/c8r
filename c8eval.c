@@ -30,6 +30,7 @@
 #include "c8mpz.h"
 #include "c8mpfr.h"
 #include "c8ctx.h"
+#include "c8debug.h"
 
 #define _GNU_SOURCE
 #include <assert.h>
@@ -102,7 +103,7 @@ static struct c8obj* expression(struct c8eval* o, int p, int f, int ex)
           }
           next(o);
 
-        } else if (C8_OP_LIST == op) { // argument list          
+        } else if (C8_OP_LIST == op) { // argument list
           struct c8obj* r = list(o, op, ex);
           struct c8list* lr = to_c8list(r);
           if (!lr) {
@@ -112,10 +113,13 @@ static struct c8obj* expression(struct c8eval* o, int p, int f, int ex)
           next(o);
           
           // Call function
+	  c8obj_debug(C8_DEBUG_DETAIL, "func", left);
+	  c8obj_debug(C8_DEBUG_DETAIL, "args", r);
           struct c8obj* new_left = c8obj_op(left, op, r);
           c8obj_unref(left);
           c8obj_unref(r);
           left = new_left;
+	  c8obj_debug(C8_DEBUG_DETAIL, "return", left);
 
         } else {
           struct c8obj* right = 0;
@@ -485,6 +489,7 @@ void c8eval_destroy(struct c8eval* o)
 
 struct c8obj* c8eval_expr(struct c8eval* o, const char* expr)
 {
+  c8debug(C8_DEBUG_DETAIL, "c8eval_expr: %s", expr);
   o->pos = expr;
   o->type = C8_TOKEN_NULL;
   c8buf_init(&o->name);
@@ -507,6 +512,12 @@ int c8eval_cond(struct c8eval* o, const char* expr)
     c8obj_unref(ro);
   }
   return ret;
+}
+
+struct c8ctx* c8eval_global(struct c8eval* o)
+{
+  assert(o);
+  return o->global;
 }
 
 void c8eval_set_resolver(struct c8eval* o, c8eval_resolver_func resolver, 

@@ -8,6 +8,7 @@ set(C8_VERSION_PATCH 0)
 configure_file("${PROJECT_SOURCE_DIR}/c8version.h.in"
                "${PROJECT_BINARY_DIR}/c8version.h")
 include_directories("${PROJECT_BINARY_DIR}")
+include_directories("/usr/local/include")
 
 add_compile_options(-Wall)
 

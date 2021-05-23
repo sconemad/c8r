@@ -23,8 +23,29 @@
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <getopt.h>
 
 static struct c8ctx* ctx;
+static struct c8script* script;
+static struct c8eval* eval;
+
+int print_usage(const char* pgm)
+{
+  printf("Usage: %s [OPTS]... [script]\n"
+         "Options:\n"
+         "  -v      print version info\n"
+         "  -dN     use debug level N (0...4)\n"
+         "\n", pgm);
+  return 0;
+}
+
+int print_version()
+{
+  printf("c8r %d.%d.%d / %s\n%s\n\n",
+         C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH,
+         C8_WEBSITE, C8_COPYRIGHT);
+  return 0;
+}
 
 int run_interactive()
 {
@@ -33,15 +54,11 @@ int run_interactive()
   c8buf_append_str(&hf, "/.c8r_history");
   read_history(c8buf_str(&hf));
 
-  printf("c8r %d.%d.%d / %s\n%s\n\n",
-         C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH,
-         C8_WEBSITE, C8_COPYRIGHT);
+  print_version();
 
-  struct c8eval* eval = c8eval_create(ctx);
   int fmt = C8_FMT_DEC;
 
   while (1) {
-    //    char* line = readline("c8r> ");
     char* line = readline("\x1b[1;1mc8r>\x1b[m ");
     if (line==0 || strcmp(line, "exit") == 0) break;
     if (line[0] == 0) continue;
@@ -70,7 +87,6 @@ int run_interactive()
   printf("\n");
   write_history(c8buf_str(&hf));
   c8buf_clear(&hf);
-  c8eval_destroy(eval);
   return 0;
 }
 
@@ -87,14 +103,12 @@ int run_script(const char* file)
   data[size] = 0;
 
   // parse
-  struct c8script* script = c8script_create(ctx);
   int ret = c8script_parse(script, data);
   c8debug(C8_DEBUG_INFO, "c8script_parse returned %d", ret);
 
   // run
   ret = c8script_run(script);
   c8debug(C8_DEBUG_INFO, "c8script_run returned %d", ret);
-  c8script_destroy(script);
   free((void*)data);
   return 0;
 }
@@ -137,22 +151,35 @@ struct c8obj* debug(struct c8list* args)
 
 int main(int argc, char* argv[])
 {
-  c8debug_level(C8_DEBUG_DETAIL);
+  int c;
+  extern char* optarg;
+  while ((c = getopt(argc, argv,"?vd:")) >= 0) {
+    switch (c) {
+    case '?': return print_usage(argv[0]);
+    case 'v': return print_version();
+    case 'd': c8debug_level(atoi(optarg)); break;
+    }
+  }
 
   ctx = c8ctx_create();
+  c8string_init_ctx(ctx);
   c8mpfr_init_ctx(ctx);
   c8mpz_init_ctx(ctx);
   c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print));
   c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run));
   c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug));
 
+  script = c8script_create(ctx);
+  eval = c8script_eval(script);
+
   int ret = 0;
-  if (argc == 2) {
-    ret = run_script(argv[1]);
+  if (optind < argc) {
+    ret = run_script(argv[optind]);
   } else {
     ret = run_interactive();
   }
 
+  c8script_destroy(script);
   c8ctx_destroy(ctx);
   return ret;
 }

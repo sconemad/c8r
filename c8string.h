@@ -23,6 +23,8 @@
 struct c8string;
 struct c8obj;
 struct c8buf;
+struct c8ctx;
+struct c8list;
 
 /** Safe casts from c8obj
  */
@@ -35,3 +37,11 @@ struct c8string* c8string_create();
 struct c8string* c8string_create_str(const char* str);
 struct c8string* c8string_create_buf(const struct c8buf* buf);
 
+/** Add string functions to context
+ */
+void c8string_init_ctx(struct c8ctx* ctx);
+
+/** Functions
+ */
+struct c8obj* c8string_to_str(struct c8list* args);
+struct c8obj* c8string_size(struct c8list* args);

@@ -60,3 +60,6 @@ void c8obj_str(const struct c8obj* o, struct c8buf* buf, int f);
  * If op is a binary operation, p gives the right hand value.
  */
 struct c8obj* c8obj_op(struct c8obj* o, int op, struct c8obj* p);
+
+void c8obj_debug(int level, const char* name, const struct c8obj* o);
+

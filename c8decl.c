@@ -89,6 +89,8 @@ static int c8decl_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8decl* oo = to_c8decl(o);
   assert(oo);
+  c8debug(C8_DEBUG_INFO, "c8decl_run: %s = %s",
+	  c8buf_str(&oo->name), c8buf_str(&oo->initialiser));
   struct c8group* group = find_parent_group(o);
   if (!group) return C8_RUN_ERROR;
   

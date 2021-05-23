@@ -71,8 +71,10 @@ void c8script_destroy(struct c8script* o)
   assert(o);
   c8buf_clear(&o->script);
   c8buf_clear(&o->token);
-  struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
-  if (root) c8stmt_destroy(root);
+  if (c8vec_size(&o->stack) > 0) {
+    struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
+    if (root) c8stmt_destroy(root);
+  }
   c8vec_clear(&o->stack);
   c8eval_destroy(o->eval);
   c8obj_unref(o->ret);
@@ -119,6 +121,27 @@ int c8script_run(struct c8script* o)
   assert(c8vec_size(&o->stack) > 0);
   struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
   return c8stmt_run(root, o);
+}
+
+struct c8eval* c8script_eval(struct c8script* o)
+{
+  assert(o);
+  return o->eval;
+}
+
+void c8script_give_ret(struct c8script* o, struct c8obj* ret)
+{
+  assert(o);
+  c8obj_unref(o->ret);
+  o->ret = ret;
+}
+
+struct c8obj* c8script_take_ret(struct c8script* o)
+{
+  assert(o);
+  struct c8obj* ret = o->ret;
+  o->ret = 0;
+  return ret;
 }
 
 #define C8_PARSETOKEN_UNKNOWN 0
@@ -297,40 +320,4 @@ static int next(struct c8script* o)
 
   c8debug(C8_DEBUG_DETAIL, "token: %s", c8buf_str(&o->token));
   return 1;
-}
-
-struct c8eval* c8script_eval(struct c8script* o)
-{
-  assert(o);
-  return o->eval;
-}
-
-int c8script_handle_result(struct c8script* o, struct c8obj* result)
-{
-  assert(o);
-  int ret = C8_RUN_NORMAL;
-  struct c8error* err = to_c8error(result);
-  if (err) {
-    ret = C8_RUN_ERROR;
-    struct c8buf es; c8buf_init(&es);
-    c8obj_str(result, &es, C8_FMT_DEC);
-    c8debug(C8_DEBUG_ERROR, "c8script: %s", c8buf_str(&es));
-    c8buf_clear(&es);
-  }
-  return ret;
-}
-
-void c8script_give_ret(struct c8script* o, struct c8obj* ret)
-{
-  assert(o);
-  c8obj_unref(o->ret);
-  o->ret = ret;
-}
-
-struct c8obj* c8script_take_ret(struct c8script* o)
-{
-  assert(o);
-  struct c8obj* ret = o->ret;
-  o->ret = 0;
-  return ret;
 }

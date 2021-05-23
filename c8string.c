@@ -24,6 +24,11 @@
 #include "c8objimp.h"
 #include "c8ops.h"
 #include "c8bool.h"
+#include "c8ctx.h"
+#include "c8func.h"
+#include "c8list.h"
+#include "c8error.h"
+#include "c8mpz.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -67,6 +72,16 @@ static struct c8obj* c8string_op(struct c8obj* o, int op, struct c8obj* p)
 {
   struct c8string* oo = to_c8string(o);
   assert(oo);
+
+  if (op == C8_OP_LOOKUP && p) {
+    struct c8buf nb; c8buf_init(&nb); c8obj_str(p, &nb, 0);
+    const char* name = c8buf_str(&nb);
+    struct c8func* fn = 0;
+    if (strcmp("size", name)==0) fn = c8func_create_method(c8string_size, o);
+    c8buf_clear(&nb);
+    return (struct c8obj*)fn;
+  }
+
   switch (op) {
     case C8_OP_ADD: {
       struct c8string* sr = (struct c8string*)c8string_copy(o);
@@ -135,4 +150,42 @@ struct c8string* c8string_create_buf(const struct c8buf* buf)
   struct c8string* oo = c8string_create();
   c8buf_init_copy(&oo->buf, buf);
   return oo;
+}
+
+void c8string_init_ctx(struct c8ctx* ctx)
+{
+  c8ctx_add(ctx, "str", (struct c8obj*)c8func_create(c8string_to_str));
+}
+
+struct c8obj* c8string_to_str(struct c8list* args)
+{
+  if (c8list_size(args) != 1)
+    return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* a = c8list_at(args, 0);
+  if (!a)
+    return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
+  
+  struct c8string* oo = c8string_create();
+  c8obj_str(a, &oo->buf, C8_FMT_DEC);
+  c8obj_unref(a);
+  return (struct c8obj*)oo;
+}
+
+struct c8obj* c8string_size(struct c8list* args)
+{
+  if (c8list_size(args) != 1)
+    return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* a = c8list_at(args, 0);
+  if (!a)
+    return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
+  
+  struct c8string* s = to_c8string(a);
+  if (!s) {
+    c8obj_unref(a);
+    return (struct c8obj*)c8error_create(C8_ERROR_ARGUMENT);
+  }
+
+  int len = c8buf_len(&s->buf);
+  c8obj_unref(a);
+  return (struct c8obj*)c8mpz_create_int(len);
 }

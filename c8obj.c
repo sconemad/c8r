@@ -20,8 +20,11 @@
 
 #include "c8obj.h"
 #include "c8objimp.h"
+#include "c8buf.h"
+#include "c8debug.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 struct c8obj* c8obj_ref(struct c8obj* o)
 {
@@ -62,4 +65,16 @@ struct c8obj* c8obj_op(struct c8obj* o, int op, struct c8obj* p)
 {
   assert(o);
   return (o->imp->op)(o, op, p);
+}
+
+void c8obj_debug(int level, const char* name, const struct c8obj* o)
+{
+  if (!o) {
+    c8debug(level, "%s: null", name);
+  } else {
+    struct c8buf m; c8buf_init(&m);
+    c8obj_str(o, &m, C8_FMT_DEC);
+    c8debug(level, "%s: %s", name, c8buf_str(&m));
+    c8buf_clear(&m);
+  }
 }

@@ -120,10 +120,8 @@ static int c8subdef_run(struct c8stmt* o, struct c8script* script)
 {
   struct c8subdef* oo = to_c8subdef(o);
   assert(oo);
-  struct c8group* group = find_parent_group(o);
-  if (!group) return C8_RUN_ERROR;
-  
-  struct c8ctx* ctx = c8group_ctx(group);
+  struct c8eval* eval = c8script_eval(script);
+  struct c8ctx* ctx = c8eval_global(eval);
   struct c8sub* sub = c8sub_create(oo, script);
   c8ctx_add(ctx, c8buf_str(&oo->name), (struct c8obj*)sub);
 
@@ -188,7 +186,8 @@ static void c8sub_str(const struct c8obj* o, struct c8buf* buf, int f)
 {
   const struct c8sub* oo = to_const_c8sub(o);
   assert(oo);
-  c8buf_append_str(buf, "subroutine");
+  c8buf_append_str(buf, "subroutine:");
+  c8buf_append_buf(buf, &oo->def->name);
 }
 
 static struct c8obj* c8sub_op(struct c8obj* o, int op, struct c8obj* p)
@@ -247,7 +246,12 @@ struct c8obj* c8sub_call(struct c8sub* oo, struct c8list* args)
       struct c8obj* value = c8list_at(args, i);
       c8ctx_add(ctx, name, value);
     }
-  } 
-  c8stmt_run(oo->def->body, oo->script);
-  return c8script_take_ret(oo->script);
+  }
+
+  struct c8ctx* gctx = c8eval_global(c8script_eval(oo->script));
+  struct c8script* subscr = c8script_create(gctx);
+  c8stmt_run(oo->def->body, subscr);
+  struct c8obj* r = c8script_take_ret(subscr);
+  c8script_destroy(subscr);
+  return r;
 }

@@ -26,6 +26,7 @@
 #include "c8buf.h"
 #include "c8obj.h"
 #include "c8debug.h"
+#include "c8error.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -66,7 +67,12 @@ static int c8expr_run(struct c8stmt* o, struct c8script* script)
   c8debug(C8_DEBUG_INFO, "c8expr_run: %s", c8buf_str(&oo->expr));
   struct c8eval* eval = c8script_eval(script);
   struct c8obj* result = c8eval_expr(eval, c8buf_str(&oo->expr));
-  int ret = c8script_handle_result(script, result);
+  int ret = C8_RUN_NORMAL;
+  struct c8error* err = to_c8error(result);
+  if (err) {
+    ret = C8_RUN_ERROR;
+    c8obj_debug(C8_DEBUG_ERROR, "c8expr_run", result);
+  }
   c8obj_unref(result);
   return ret;
 }

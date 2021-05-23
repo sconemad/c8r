@@ -40,6 +40,10 @@ struct c8obj* c8eval_expr(struct c8eval* o, const char* expr);
  */
 int c8eval_cond(struct c8eval* o, const char* expr);
 
+/** Get the global context
+ */
+struct c8ctx* c8eval_global(struct c8eval* o);
+
 /** Resolver function
  */
 typedef struct c8obj* (*c8eval_resolver_func)
