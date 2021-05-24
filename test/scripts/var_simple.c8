@@ -1,0 +1,14 @@
+#TEST: Simple variable use
+
+var myNumber = 789;
+test(myNumber == 789);
+
+var myString = "Oh, I'm afraid the deflector shield will be quite operational when your friends arrive.";
+test(myString.size() == 87);
+
+var c = 1 + 2 + 3 * 4 / 5;
+test(c == 5.4);
+
+var s = "I like the number " + 2 + " for various reasons";
+test(s.size() > 38);
+

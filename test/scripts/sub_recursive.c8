@@ -1,0 +1,11 @@
+#TEST: Recursive subroutine calls
+
+sub pow_r(value) {
+  if (value > 0)
+    return 2 * pow_r(value-1);
+  return 1;
+}
+
+test(1 == pow_r(0));
+test(1024 == pow_r(10));
+

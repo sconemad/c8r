@@ -1,0 +1,14 @@
+#TEST: Simple subroutine calls
+
+var calls = 0;
+
+sub mySub(a)
+{
+  print("In the subroutine: " + a + " (" + ++calls + ")");
+}
+
+mySub(1);
+mySub("Hello");
+mySub(2^10);
+
+test(calls == 3);

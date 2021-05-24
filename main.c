@@ -103,14 +103,21 @@ int run_script(const char* file)
   data[size] = 0;
 
   // parse
+  c8debug(C8_DEBUG_INFO, "Parsing script (%d bytes)...", size);
   int ret = c8script_parse(script, data);
-  c8debug(C8_DEBUG_INFO, "c8script_parse returned %d", ret);
-
+  if (ret != 0) {
+    c8debug(C8_DEBUG_ERROR, "Parse error: %d", ret);
+    return ret;
+  }
+  
   // run
+  c8debug(C8_DEBUG_INFO, "Parsed ok, running script...");
   ret = c8script_run(script);
-  c8debug(C8_DEBUG_INFO, "c8script_run returned %d", ret);
   free((void*)data);
-  return 0;
+  if (ret != 0) {
+    c8debug(C8_DEBUG_ERROR, "Runtime error: %d", ret);
+  }
+  return ret;
 }
 
 struct c8obj* print(struct c8list* args)
@@ -149,6 +156,19 @@ struct c8obj* debug(struct c8list* args)
   return 0;
 }
 
+struct c8obj* test(struct c8list* args)
+{
+  if (c8list_size(args) != 1) 
+    return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
+  struct c8obj* cond = c8list_at(args, 0);
+  if (c8obj_int(cond) == 0) {
+    c8debug(C8_DEBUG_ERROR, "TEST FAILED: line %d", c8script_current_line(script));
+    exit(1);
+  }
+  c8obj_unref(cond);
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
   int c;
@@ -168,6 +188,7 @@ int main(int argc, char* argv[])
   c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print));
   c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run));
   c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug));
+  c8ctx_add(ctx, "test", (struct c8obj*)c8func_create(test));
 
   script = c8script_create(ctx);
   eval = c8script_eval(script);

@@ -50,6 +50,7 @@ struct c8script {
   struct c8vec stack;
   struct c8eval* eval;
   struct c8obj* ret;
+  struct c8stmt* running;
 };
 
 static int next(struct c8script* o);
@@ -63,6 +64,7 @@ struct c8script* c8script_create(struct c8ctx* global)
   c8vec_init(&o->stack);
   o->eval = c8eval_create(global);
   o->ret = 0;
+  o->running = 0;
   return o;
 }
 
@@ -119,8 +121,15 @@ int c8script_run(struct c8script* o)
 {
   assert(o);
   assert(c8vec_size(&o->stack) > 0);
+  o->running = 0;
   struct c8stmt* root = (struct c8stmt*)c8vec_at(&o->stack, 0);
   return c8stmt_run(root, o);
+}
+
+int c8script_current_line(struct c8script* o)
+{
+  assert(o);
+  return o->running ? o->running->line : 0;
 }
 
 struct c8eval* c8script_eval(struct c8script* o)
@@ -205,6 +214,13 @@ struct c8stmt* c8script_parse_token(struct c8script* o, const char* token)
   s->line = o->line;
   if (s && tid != C8_PARSETOKEN_UNKNOWN) c8vec_push_back(&o->stack, s);
   return s;
+}
+
+void c8script_set_running(struct c8script* o, struct c8stmt* s)
+{
+  assert(o);
+  assert(s);
+  o->running = s;
 }
 
 static int count_lines(const char* start, const char* end)

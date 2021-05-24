@@ -34,6 +34,8 @@ int c8script_parse(struct c8script* o, const char* script);
 
 int c8script_run(struct c8script* o);
 
+int c8script_current_line(struct c8script* o);
+
 /** Get the eval object
  */
 struct c8eval* c8script_eval(struct c8script* o);
@@ -47,3 +49,4 @@ struct c8obj* c8script_take_ret(struct c8script* o);
 
 struct c8stmt* c8script_parse_token(struct c8script* o, const char* token);
 
+void c8script_set_running(struct c8script* o, struct c8stmt* s);

@@ -1,0 +1,8 @@
+#TEST: Simple for loop
+
+var a=0;
+for (a=1; a<10; ++a) {
+  print(a);
+}
+
+test(a == 10);

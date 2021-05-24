@@ -57,5 +57,7 @@ void c8stmt_set_parent(struct c8stmt* o, struct c8stmt* p)
 int c8stmt_run(struct c8stmt* o, struct c8script* script)
 {
   assert(o);
+  assert(script);
+  c8script_set_running(script, o);
   return (o->imp->run)(o, script);
 }

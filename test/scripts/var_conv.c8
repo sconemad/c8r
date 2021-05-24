@@ -1,0 +1,5 @@
+#TEST: Variable conversion
+
+test( str(2^1000).size() == 302);
+
+test( str(1234) == "1234");
