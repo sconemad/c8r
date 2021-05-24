@@ -260,7 +260,7 @@ static int next(struct c8script* o)
       } else if (in_comment) {
 	// Ignore everything until end of line
 	while (*c == '\r' || *c == '\n') {
-	  in_comment = 1;
+	  in_comment = 0;
 	  ++skip;
 	  ++c;
 	  if (!*c) break;
