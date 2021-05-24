@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(c8r)
 
 set(C8_VERSION_MAJOR 0)
-set(C8_VERSION_MINOR 1)
+set(C8_VERSION_MINOR 2)
 set(C8_VERSION_PATCH 0)
 
 configure_file("${PROJECT_SOURCE_DIR}/c8version.h.in"
@@ -12,8 +12,11 @@ include_directories("/usr/local/include")
 
 add_compile_options(-Wall)
 
-#add_compile_options(-O0)
-#add_compile_options(-g)
+option(ENABLE_ASAN "Enable address sanitizer" 0)
+if(ENABLE_ASAN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+endif()
 
 if(EMSCRIPTEN)
   add_definitions(-I${PROJECT_BINARY_DIR}/../gmp/)
@@ -30,23 +33,28 @@ if(EMSCRIPTEN)
     "-s NO_EXIT_RUNTIME=1"
     "-s EXPORTED_FUNCTIONS=\"['_main','_evaluate']\""
     "-s ASSERTIONS=1"
-    c8
+    calcul8
     ${PROJECT_BINARY_DIR}/../mpfr/src/.libs/libmpfr.a
     ${PROJECT_BINARY_DIR}/../gmp/.libs/libgmp.a)
 
 else()
-  add_compile_options(-fsanitize=address)
   add_executable(c8r main.c)
   target_link_libraries(c8r
-    -fsanitize=address
-    c8
+    calcul8
     readline
     mpfr
     gmp)
+  
+  enable_testing()
 
+  file(GLOB TESTSCRIPTS "test/scripts/*.c8")
+  foreach(SCRIPT IN LISTS TESTSCRIPTS)
+    message(BASENAME ${SCRIPT})
+    add_test(NAME "${SCRIPT}" COMMAND c8r -d4 "${SCRIPT}")
+  endforeach()  
 endif()
 
-add_library(c8
+add_library(calcul8
   c8bool.c
   c8buf.c
   c8cond.c
