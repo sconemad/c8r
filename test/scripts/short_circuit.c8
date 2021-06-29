@@ -1,0 +1,46 @@
+#TEST: Short circuit ops
+
+var na = 0;
+sub a() { ++na; return true; }
+
+na = 0;
+true && a();
+test(na == 1, "Should not short");
+
+na = 0;
+false && a();
+test(na == 0, "Should short");
+
+na = 0;
+true || a();
+test(na == 0, "Should short");
+
+na = 0;
+false || a();
+test(na == 1, "Should not short");
+
+# More complex cases
+
+na = 0;
+true && true && a();
+test(na == 1, "Should not short");
+
+na = 0;
+true && a() && a();
+test(na == 2, "Should not short");
+
+na = 0;
+a() && false && a();
+test(na == 1, "Should not short");
+
+na = 0;
+true || a() || a();
+test(na == 0, "Should short");
+
+na = 0;
+false || a() || a();
+test(na == 1, "Should not short");
+
+na = 0;
+a() || false || a();
+test(na == 1, "Should not short");

@@ -115,7 +115,8 @@ static struct c8obj* expression(struct c8eval* o, int p, int f, int ex)
           // Call function
 	  c8obj_debug(C8_DEBUG_DETAIL, "func", left);
 	  c8obj_debug(C8_DEBUG_DETAIL, "args", r);
-          struct c8obj* new_left = c8obj_op(left, op, r);
+          struct c8obj* new_left = 0;
+          if (ex) new_left = c8obj_op(left, op, r);
           c8obj_unref(left);
           c8obj_unref(r);
           left = new_left;
@@ -124,21 +125,21 @@ static struct c8obj* expression(struct c8eval* o, int p, int f, int ex)
         } else {
           struct c8obj* right = 0;
 
-          if (C8_OP_LOGIC_OR == op && c8obj_int(left)) {
-            // Short circuit || - don't exec rhs if lhs is true
-            right = expression(o, p2+1, f, 0);
-            c8obj_unref(right);
-            return left;
-
-          } else if (C8_OP_LOGIC_AND == op && !c8obj_int(left)) {
-            // Short circuit && - don't exec rhs if lhs is false
-            right = expression(o, p2+1, f, 0);
-            c8obj_unref(right);
-            return left;
-            
-          } else {
-            right = expression(o, p2+1, f, ex);
+          // Handle short circuits by locally disabling execution
+          int lex = ex;
+          if (lex) {
+            if (C8_OP_LOGIC_OR == op && c8obj_int(left)) {
+              // Short circuit || - don't exec rhs if lhs is true
+              c8obj_debug(C8_DEBUG_DETAIL, "shorting ||", left);
+              lex = 0;
+            } else if (C8_OP_LOGIC_AND == op && !c8obj_int(left)) {
+              // Short circuit && - don't exec rhs if lhs is false
+              c8obj_debug(C8_DEBUG_DETAIL, "shorting &&", left);
+              lex = 0;
+            }
           }
+          
+          right = expression(o, p2+1, f, lex);
 
           if (0 == right) {
             o->type = C8_TOKEN_NULL;

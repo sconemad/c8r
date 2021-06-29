@@ -20,6 +20,7 @@
 
 #include "c8stmt.h"
 #include "c8stmtimp.h"
+#include "c8script.h"
 #include "c8obj.h"
 #include "c8buf.h"
 

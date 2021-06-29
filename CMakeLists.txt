@@ -1,12 +1,12 @@
 cmake_minimum_required (VERSION 2.6)
-project(c8r)
+project(calcul8r)
 
 set(C8_VERSION_MAJOR 0)
 set(C8_VERSION_MINOR 2)
 set(C8_VERSION_PATCH 0)
 
-configure_file("${PROJECT_SOURCE_DIR}/c8version.h.in"
-               "${PROJECT_BINARY_DIR}/c8version.h")
+configure_file("${PROJECT_SOURCE_DIR}/calcul8/c8version.h.in"
+               "${PROJECT_BINARY_DIR}/calcul8/c8version.h")
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories("/usr/local/include")
 
@@ -24,9 +24,9 @@ if(EMSCRIPTEN)
   add_compile_options(-Oz)
   add_definitions("-s ASSERTIONS=1")
 
-  add_executable(c8r main-ems.c)
+  add_executable(calcul8r main-ems.c)
 
-  target_link_libraries(c8r
+  target_link_libraries(calcul8r
     -Oz
     "--closure 1"
     "--llvm-lto 3"
@@ -38,8 +38,8 @@ if(EMSCRIPTEN)
     ${PROJECT_BINARY_DIR}/../gmp/.libs/libgmp.a)
 
 else()
-  add_executable(c8r main.c)
-  target_link_libraries(c8r
+  add_executable(calcul8r main.c)
+  target_link_libraries(calcul8r
     calcul8
     readline
     mpfr
@@ -49,34 +49,33 @@ else()
 
   file(GLOB TESTSCRIPTS "test/scripts/*.c8")
   foreach(SCRIPT IN LISTS TESTSCRIPTS)
-    message(BASENAME ${SCRIPT})
-    add_test(NAME "${SCRIPT}" COMMAND c8r -d4 "${SCRIPT}")
+    add_test(NAME "${SCRIPT}" COMMAND calcul8r -d4 "${SCRIPT}")
   endforeach()  
 endif()
 
 add_library(calcul8
-  c8bool.c
-  c8buf.c
-  c8cond.c
-  c8ctx.c
-  c8debug.c
-  c8decl.c
-  c8error.c
-  c8eval.c
-  c8expr.c
-  c8flow.c
-  c8func.c
-  c8group.c
-  c8list.c
-  c8loop.c
-  c8map.c
-  c8mpfr.c
-  c8mpz.c
-  c8obj.c
-  c8ops.c
-  c8script.c
-  c8stmt.c
-  c8string.c
-  c8sub.c
-  c8vec.c
+  calcul8/c8bool.c
+  calcul8/c8buf.c
+  calcul8/c8cond.c
+  calcul8/c8ctx.c
+  calcul8/c8debug.c
+  calcul8/c8decl.c
+  calcul8/c8error.c
+  calcul8/c8eval.c
+  calcul8/c8expr.c
+  calcul8/c8flow.c
+  calcul8/c8func.c
+  calcul8/c8group.c
+  calcul8/c8list.c
+  calcul8/c8loop.c
+  calcul8/c8map.c
+  calcul8/c8mpfr.c
+  calcul8/c8mpz.c
+  calcul8/c8obj.c
+  calcul8/c8ops.c
+  calcul8/c8script.c
+  calcul8/c8stmt.c
+  calcul8/c8string.c
+  calcul8/c8sub.c
+  calcul8/c8vec.c
   )

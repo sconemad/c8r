@@ -18,7 +18,7 @@
  * along with c8r.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "c8r.h"
+#include "calcul8/calcul8.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

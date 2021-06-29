@@ -6,6 +6,11 @@ test(myNumber == 789);
 var myString = "Oh, I'm afraid the deflector shield will be quite operational when your friends arrive.";
 test(myString.size() == 87);
 
+var myBool = true;
+test(myBool == true);
+myBool = false;
+test(myBool == false);
+
 var c = 1 + 2 + 3 * 4 / 5;
 test(c == 5.4);
 

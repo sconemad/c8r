@@ -1,0 +1,57 @@
+#TEST: Simple if statements
+
+var x = 0;
+
+x=0;
+if (true) ++x;
+test(x == 1, "Test if true");
+
+x=0;
+if (false) ++x;
+test(x == 0, "Test if false");
+
+x=0;
+if (true) { ++x; ++x; }
+test(x == 2, "Test if true with group");
+
+x=0;
+if (false) --x; else ++x;
+test(x == 1, "Test if false with else");
+
+x=0;
+if (false) { --x; --x; } else { ++x; ++x; } 
+test(x == 2, "Test if false with else group");
+
+x = 0;
+if (0 == 0) ++x;
+if (1 == 1) ++x;
+if (10 == 10) ++x;
+if (123 == 123) ++x;
+if (12345678901234567890 == 12345678901234567890) ++x;
+test(x == 5, "Test equality true");
+
+x = 0;
+if (0 == 1) ++x;
+if (1 == 0) ++x;
+if (10 == 20) ++x;
+if (123 == 124) ++x;
+if (12345678901234567890 == 12345678901234567891) ++x;
+test(x == 0, "Test equality false");
+
+if (0 != 0) ++x;
+if (1 != 1) ++x;
+if (10 != 10) ++x;
+if (123 != 123) ++x;
+if (12345678901234567890 != 12345678901234567890) ++x;
+test(x == 0, "Test inequality false");
+
+x = 0;
+if (0 != 1) ++x;
+if (1 != 0) ++x;
+if (10 != 20) ++x;
+if (123 != 124) ++x;
+if (12345678901234567890 != 12345678901234567891) ++x;
+test(x == 5, "Test inequality true");
+
+
+

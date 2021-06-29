@@ -18,12 +18,13 @@
  * along with c8r.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "c8r.h"
+#include "calcul8/calcul8.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <getopt.h>
+#include <sys/stat.h>
 
 static struct c8ctx* ctx;
 static struct c8script* script;
@@ -41,7 +42,7 @@ int print_usage(const char* pgm)
 
 int print_version()
 {
-  printf("c8r %d.%d.%d / %s\n%s\n\n",
+  printf("calcul8r %d.%d.%d / %s\n%s\n\n",
          C8_VERSION_MAJOR, C8_VERSION_MINOR, C8_VERSION_PATCH,
          C8_WEBSITE, C8_COPYRIGHT);
   return 0;
@@ -51,7 +52,9 @@ int run_interactive()
 {
   struct c8buf hf;
   c8buf_init_str(&hf, getenv("HOME"));
-  c8buf_append_str(&hf, "/.c8r_history");
+  c8buf_append_str(&hf, "/.config/calcul8r");
+  mkdir(c8buf_str(&hf), 0700);
+  c8buf_append_str(&hf, "/history");
   read_history(c8buf_str(&hf));
 
   print_version();
@@ -59,7 +62,8 @@ int run_interactive()
   int fmt = C8_FMT_DEC;
 
   while (1) {
-    char* line = readline("\x1b[1;1mc8r>\x1b[m ");
+    //    char* line = readline("\x1b[1;1mc8>\x1b[m ");
+    char* line = readline("c8> ");
     if (line==0 || strcmp(line, "exit") == 0) break;
     if (line[0] == 0) continue;
 
@@ -158,11 +162,21 @@ struct c8obj* debug(struct c8list* args)
 
 struct c8obj* test(struct c8list* args)
 {
-  if (c8list_size(args) != 1) 
+  if (c8list_size(args) < 1 || c8list_size(args) > 2)
     return (struct c8obj*) c8error_create(C8_ERROR_ARGUMENT);
   struct c8obj* cond = c8list_at(args, 0);
   if (c8obj_int(cond) == 0) {
-    c8debug(C8_DEBUG_ERROR, "TEST FAILED: line %d", c8script_current_line(script));
+
+    struct c8buf msg; c8buf_init(&msg);
+    if (c8list_size(args) == 2) {
+      struct c8obj* omsg = c8list_at(args, 1);
+      c8obj_str(omsg, &msg, C8_FMT_DEC);
+      c8obj_unref(omsg);
+    }
+
+    c8debug(C8_DEBUG_ERROR, "script:%d: Test failed: %s",
+            c8script_current_line(script), c8buf_str(&msg));
+    c8buf_clear(&msg);
     exit(1);
   }
   c8obj_unref(cond);

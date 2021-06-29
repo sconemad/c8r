@@ -84,7 +84,7 @@ static int c8cond_parse(struct c8stmt* o, struct c8script* script,
 
   case 4:
     oo->false_stmt = c8script_parse_token(script, token);
-    if (oo->false_stmt) c8stmt_set_parent(oo->true_stmt, o);
+    if (oo->false_stmt) c8stmt_set_parent(oo->false_stmt, o);
     break;
 
   default:

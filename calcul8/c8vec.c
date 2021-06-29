@@ -54,6 +54,7 @@ void* c8vec_at(struct c8vec* o, int i)
 const void* c8vec_const_at(const struct c8vec* o, int i)
 {
   assert(o);
+  if (i<0) i = o->size + i;
   assert(i>=0 && i<o->size);
   return o->items[i];
 }

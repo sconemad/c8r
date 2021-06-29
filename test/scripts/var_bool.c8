@@ -1,0 +1,37 @@
+#TEST: Boolean variables
+
+test(true == true, "Literal equality");
+test(false == false, "Literal equality");
+test(true != false, "Literal inequality");
+test(false != true, "Literal inequality");
+
+test((false || false) == false, "Literal or");
+test((false || true) == true, "Literal or");
+test((true || false) == true, "Literal or");
+test((true || true) == true, "Literal or");
+
+test((false && false) == false, "Literal and");
+test((false && true) == false, "Literal and");
+test((true && false) == false, "Literal and");
+test((true && true) == true, "Literal and");
+
+var bTrue = true;
+var bFalse = false;
+
+test(bTrue == true, "Var-literal equality");
+test(true == bTrue, "Literal-var equality");
+test(bFalse == false, "Var-literal equality");
+test(false == bFalse, "Literal-var equality");
+
+test(bTrue != false, "Var-literal inequality");
+test(false != bTrue, "Literal-var inequality");
+test(bFalse != true, "Var-literal inequality");
+test(true != bFalse, "Literal-var inequality");
+
+test(bTrue == bTrue, "Var Equality");
+test(bFalse == bFalse, "Var Equality");
+test(bTrue != bFalse, "Var Inequality");
+test(bFalse != bTrue, "Var Inequality");
+
+test((true && true && true), "Chained literal and");
+test((true || true || true), "Chained literal or");

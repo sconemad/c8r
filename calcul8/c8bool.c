@@ -22,6 +22,7 @@
 #include "c8obj.h"
 #include "c8buf.h"
 #include "c8objimp.h"
+#include "c8ops.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -59,10 +60,41 @@ static void c8bool_str(const struct c8obj* o, struct c8buf* buf, int f)
   c8buf_append_str(buf, oo->value ? "true" : "false");
 }
 
+static struct c8obj* c8bool_binary_op(struct c8bool* oo, int op,
+                                      struct c8bool* bp)
+{
+  switch (op) {
+    case C8_OP_EQUALITY:
+      return (struct c8obj*)c8bool_create(oo->value == bp->value);
+    case C8_OP_INEQUALITY:
+      return (struct c8obj*)c8bool_create(oo->value != bp->value);
+
+    case C8_OP_LOGIC_OR:
+      return (struct c8obj*)c8bool_create(oo->value || bp->value);
+    case C8_OP_LOGIC_AND:
+      return (struct c8obj*)c8bool_create(oo->value && bp->value);
+
+    case C8_OP_ASSIGN:
+      oo->value = bp->value;
+      return c8obj_ref((struct c8obj*)oo);
+  }
+  return 0;
+}
+
 static struct c8obj* c8bool_op(struct c8obj* o, int op, struct c8obj* p)
 {
   struct c8bool* oo = to_c8bool(o);
   assert(oo);
+
+  switch(op) {
+    case C8_OP_LOGIC_NOT: {
+      return (struct c8obj*)c8bool_create(!oo->value);
+    }
+  }
+
+  struct c8bool* bp = to_c8bool(p);
+  if (bp) return c8bool_binary_op(oo, op, bp);
+  
   return 0;
 }
 
