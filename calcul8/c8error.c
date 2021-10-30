@@ -28,6 +28,7 @@
 struct c8error {
   struct c8obj base;
   int code;
+  struct c8buf arg;
 };
 
 static void c8error_destroy(struct c8obj* o)
@@ -70,6 +71,9 @@ static void c8error_str(const struct c8obj* o, struct c8buf* buf, int f)
     default:
       c8buf_append_str(buf, "unknown"); break;
   }
+  if (c8buf_len(&oo->arg)) {
+    c8buf_append_fmt(buf, " '%s'", c8buf_str(&oo->arg));
+  }
 }
 
 static struct c8obj* c8error_op(struct c8obj* o, int op, struct c8obj* p)
@@ -105,6 +109,18 @@ struct c8error* c8error_create(int code)
   oo->base.refs = 1;
   oo->base.imp = &c8error_imp;
   oo->code = code;
+  c8buf_init(&oo->arg);
+  return oo;
+}
+
+struct c8error* c8error_create_arg(int code, const char* arg)
+{
+  struct c8error* oo = malloc(sizeof(struct c8error));
+  assert(oo);
+  oo->base.refs = 1;
+  oo->base.imp = &c8error_imp;
+  oo->code = code;
+  c8buf_init_str(&oo->arg, arg);
   return oo;
 }
 
@@ -118,4 +134,9 @@ int c8error_code(const struct c8error* oo)
 {
   assert(oo);
   return oo->code;
+}
+
+const char* c8error_arg(const struct c8error* oo)
+{
+  return c8buf_str(&oo->arg);
 }

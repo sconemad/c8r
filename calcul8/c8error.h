@@ -41,8 +41,11 @@ struct c8error* to_c8error(struct c8obj* o);
 /** Create a c8error object
  */
 struct c8error* c8error_create(int code);
+struct c8error* c8error_create_arg(int code, const char* arg);
 
 /** Set/get the error code
  */
 void c8error_set(struct c8error* oo, int code);
 int c8error_code(const struct c8error* oo);
+
+const char* c8error_arg(const struct c8error* oo);

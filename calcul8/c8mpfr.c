@@ -28,6 +28,7 @@
 #include "c8ctx.h"
 #include "c8list.h"
 #include "c8buf.h"
+#include "c8num.h"
 
 #include <mpfr.h>
 #include <assert.h>
@@ -185,12 +186,42 @@ static struct c8obj* c8mpfr_binary_op(struct c8mpfr* oo, int op,
   return 0;
 }
 
+static struct c8obj* c8mpfr_lookup(struct c8obj* o, const char* name)
+{
+  if (strcmp("abs", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_abs, o);
+  if (strcmp("ceil", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_ceil, o);
+  if (strcmp("floor", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_floor, o);
+  if (strcmp("trunc", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_trunc, o);
+  if (strcmp("log", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_log, o);
+  if (strcmp("exp", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_exp, o);
+  if (strcmp("sqrt", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_sqrt, o);
+  if (strcmp("cos", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_cos, o);
+  if (strcmp("sin", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_sin, o);
+  if (strcmp("tan", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_tan, o);
+  if (strcmp("acos", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_acos, o);
+  if (strcmp("asin", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_asin, o);
+  if (strcmp("atan", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_atan, o);
+  if (strcmp("atan2", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_atan2, o);
+  if (strcmp("cosh", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_cosh, o);
+  if (strcmp("sinh", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_sinh, o);
+  if (strcmp("tanh", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_tanh, o);
+  if (strcmp("mean", name)==0) return (struct c8obj*)c8func_create_method(c8mpfr_mean, o);
+  return 0;
+}
+
 static struct c8obj* c8mpfr_op(struct c8obj* o, int op, struct c8obj* p)
 {
   struct c8mpfr* oo = to_c8mpfr(o);
   assert(oo);
 
   switch (op) {
+    case C8_OP_LOOKUP: {
+      struct c8buf nb; c8buf_init(&nb);
+      c8obj_str(p, &nb, 0); 
+      struct c8obj* ret = c8mpfr_lookup(o, c8buf_str(&nb));
+      c8buf_clear(&nb);
+      return ret;
+    }
     case C8_OP_POSITIVE: {
       struct c8mpfr* nr = c8mpfr_create();
       mpfr_set(nr->value, oo->value, rnd);
@@ -258,8 +289,11 @@ static const struct c8obj_imp c8mpfr_imp = {
 
 const struct c8mpfr* to_const_c8mpfr(const struct c8obj* o)
 {
-  return (o && o->imp && o->imp == &c8mpfr_imp) ?
-    (const struct c8mpfr*)o : 0;
+  if (o && o->imp && o->imp == &c8mpfr_imp) return (const struct c8mpfr*)o;
+  const struct c8num* on = to_const_c8num(o);
+  if (on) return to_const_c8mpfr(c8num_const_value(on));
+  return 0;
+
 }
 
 struct c8mpfr* to_c8mpfr(struct c8obj* o)
@@ -269,7 +303,7 @@ struct c8mpfr* to_c8mpfr(struct c8obj* o)
 
 struct c8mpfr* c8mpfr_create()
 {
-  struct c8mpfr* oo = malloc(sizeof(struct c8mpfr));
+  struct c8mpfr* oo = (struct c8mpfr*)malloc(sizeof(struct c8mpfr));
   assert(oo);
   oo->base.refs = 1;
   oo->base.imp = &c8mpfr_imp;
@@ -336,7 +370,8 @@ void c8mpfr_init_ctx(struct c8ctx* ctx)
   c = c8mpfr_create_int(1);
   mpfr_exp(c->value, c->value, rnd);
   c8ctx_add(ctx, "e", (struct c8obj*)c);
-
+/*
+  c8ctx_add(ctx, "abs", (struct c8obj*)c8func_create(c8mpfr_abs));
   c8ctx_add(ctx, "ceil", (struct c8obj*)c8func_create(c8mpfr_ceil));
   c8ctx_add(ctx, "floor", (struct c8obj*)c8func_create(c8mpfr_floor));
   c8ctx_add(ctx, "trunc", (struct c8obj*)c8func_create(c8mpfr_trunc));
@@ -354,6 +389,7 @@ void c8mpfr_init_ctx(struct c8ctx* ctx)
   c8ctx_add(ctx, "sinh", (struct c8obj*)c8func_create(c8mpfr_sinh));
   c8ctx_add(ctx, "tanh", (struct c8obj*)c8func_create(c8mpfr_tanh));
   c8ctx_add(ctx, "mean", (struct c8obj*)c8func_create(c8mpfr_mean));
+*/
 }
 
 static struct c8obj* c8mpfr_single_arg(struct c8list* args)

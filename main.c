@@ -29,6 +29,7 @@
 static struct c8ctx* ctx;
 static struct c8script* script;
 static struct c8eval* eval;
+static int debug_level = 0;
 
 int print_usage(const char* pgm)
 {
@@ -191,14 +192,14 @@ int main(int argc, char* argv[])
     switch (c) {
     case '?': return print_usage(argv[0]);
     case 'v': return print_version();
-    case 'd': c8debug_level(atoi(optarg)); break;
+    case 'd': debug_level = atoi(optarg); break;
     }
   }
 
+  c8debug_level(debug_level);
   ctx = c8ctx_create();
   c8string_init_ctx(ctx);
-  c8mpfr_init_ctx(ctx);
-  c8mpz_init_ctx(ctx);
+  c8num_init_ctx(ctx);
   c8ctx_add(ctx, "print", (struct c8obj*)c8func_create(print));
   c8ctx_add(ctx, "run", (struct c8obj*)c8func_create(run));
   c8ctx_add(ctx, "debug", (struct c8obj*)c8func_create(debug));

@@ -50,7 +50,6 @@ struct c8obj* c8mpfr_floor(struct c8list* args);
 struct c8obj* c8mpfr_trunc(struct c8list* args);
 struct c8obj* c8mpfr_log(struct c8list* args);
 struct c8obj* c8mpfr_exp(struct c8list* args);
-struct c8obj* c8mpfr_pow(struct c8list* args);
 struct c8obj* c8mpfr_sqrt(struct c8list* args);
 struct c8obj* c8mpfr_cos(struct c8list* args);
 struct c8obj* c8mpfr_sin(struct c8list* args);

@@ -27,8 +27,7 @@
 #include "c8string.h"
 #include "c8list.h"
 #include "c8map.h"
-#include "c8mpz.h"
-#include "c8mpfr.h"
+#include "c8num.h"
 #include "c8ctx.h"
 #include "c8debug.h"
 
@@ -112,6 +111,26 @@ static struct c8obj* expression(struct c8eval* o, int p, int f, int ex)
           }
           next(o);
           
+          struct c8error* lerr = to_c8error(left);
+          if (lerr && c8error_code(lerr) == C8_ERROR_UNDEFINED_NAME && c8list_size(lr)) {
+            // If the name is not found, then attempt to lookup the name as a method of
+            // the first argument.
+            struct c8obj* method = (struct c8obj*)c8string_create_str(c8error_arg(lerr));
+            struct c8obj* new_left = c8obj_op(c8list_at(lr, 0), C8_OP_LOOKUP, method);
+            c8obj_unref(method);
+            if (new_left) {
+              c8list_pop_front(lr);
+              c8obj_unref(left);
+              left = new_left;
+            }
+          }
+
+          lerr = to_c8error(left);
+          if (lerr) {
+            c8obj_unref(r);
+            return (struct c8obj*)lerr;
+          }
+
           // Call function
 	  c8obj_debug(C8_DEBUG_DETAIL, "func", left);
 	  c8obj_debug(C8_DEBUG_DETAIL, "args", r);
@@ -336,7 +355,7 @@ static struct c8obj* resolve(struct c8eval* o, const char* name)
   if (o->global) obj = c8ctx_resolve(o->global, name);
   if (obj) return obj;
 
-  return (struct c8obj*)c8error_create(C8_ERROR_UNDEFINED_NAME);
+  return (struct c8obj*)c8error_create_arg(C8_ERROR_UNDEFINED_NAME, name);
 }
 
 // Maximum (non-alpha) operator length
@@ -383,60 +402,15 @@ static void next(struct c8eval* o)
 
   // Numeric
   if (isdigit(*c)) {
-    int ends = 1;
-    int ex = 0; // counts exponentiations
-    int dd = 0; // counts decimal points
-    int hex = 0;
-
-    char pc = *c; // previous character
-
-    for (; *c; ++c) {
-      ends = !isalnum(*c);
-      switch (*c) {
-        case '.':
-          ends = 0;
-          ++dd;
-          break;
-        case 'x': case 'X':
-          ends = (++hex>1);
-          break;
-        case 'a': case 'A':
-        case 'b': case 'B':
-        case 'c': case 'C':
-        case 'd': case 'D':
-        case 'f': case 'F':
-          if (hex==1) ends = 0;
-          break;
-        case 'e': case 'E':
-          if (hex==1) ends=0;
-          else ends = (++ex>1);
-          break;
-        case 'p': case 'P':
-          if (hex==0) ends=1;
-          else ends = (++ex>1);
-          break;
-        case 'o': case 'O':
-          ends = 0;
-          break;
-        case '+': case '-':
-          ends = (pc != 'e' && pc != 'E');
-          break;
-      }
-      if (ends) break;
-      pc = *c;
+    o->value = (struct c8obj*)c8num_parse(&c);
+    if (o->value) {
+      c8buf_append_strn(&o->name, o->pos, c - o->pos);
+      o->pos = c;
+      o->type = C8_TOKEN_VALUE;
+      return;
     }
-
-    c8buf_append_strn(&o->name, o->pos, c - o->pos);
-    if (dd || ex) {
-      o->value = (struct c8obj*)c8mpfr_create_str(c8buf_str(&o->name));
-    } else {
-      o->value = (struct c8obj*)c8mpz_create_str(c8buf_str(&o->name));
-    }
-    o->pos = c;
-    o->type = C8_TOKEN_VALUE;
-    return;
   }
-
+  
   // Alpha
   if (isalpha(*c) || '_' == *c) {
     for (; *c; ++c) if (!(isalnum(*c) || '_' == *c)) break;

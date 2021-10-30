@@ -21,6 +21,7 @@
 #include "c8mpz.h"
 #include "c8obj.h"
 #include "c8buf.h"
+#include "c8num.h"
 #include "c8objimp.h"
 #include "c8ops.h"
 #include "c8bool.h"
@@ -35,6 +36,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 struct c8mpz {
   struct c8obj base;
@@ -198,21 +200,28 @@ static struct c8obj* c8mpz_binary_op(struct c8mpz* oo, int op,
   return 0;
 }
 
+static struct c8obj* c8mpz_lookup(struct c8obj* o, const char* name)
+{
+  if (strcmp("abs", name)==0) return (struct c8obj*)c8func_create_method(c8mpz_abs, o);
+  if (strcmp("gcd", name)==0) return (struct c8obj*)c8func_create_method(c8mpz_gcd, o);
+  if (strcmp("lcm", name)==0) return (struct c8obj*)c8func_create_method(c8mpz_lcm, o);
+  if (strcmp("fib", name)==0) return (struct c8obj*)c8func_create_method(c8mpz_fib, o);
+  return 0;
+}
+
 static struct c8obj* c8mpz_op(struct c8obj* o, int op, struct c8obj* p)
 {
   struct c8mpz* oo = to_c8mpz(o);
   assert(oo);
-
-  if (op == C8_OP_LOOKUP && p) {
-    struct c8buf nb; c8buf_init(&nb); c8obj_str(p, &nb, 0);
-    const char* name = c8buf_str(&nb);
-    struct c8func* fn = 0;
-    if (strcmp("abs", name)==0) fn = c8func_create_method(c8mpz_abs, o);
-    c8buf_clear(&nb);
-    return (struct c8obj*)fn;
-  }
   
   switch (op) {
+    case C8_OP_LOOKUP: {
+      struct c8buf nb; c8buf_init(&nb);
+      c8obj_str(p, &nb, 0); 
+      struct c8obj* ret = c8mpz_lookup(o, c8buf_str(&nb));
+      c8buf_clear(&nb);
+      return ret;
+    }
     case C8_OP_POSITIVE: {
       struct c8mpz* nr = c8mpz_create();
       mpz_set(nr->value, oo->value);
@@ -271,8 +280,10 @@ static const struct c8obj_imp c8mpz_imp = {
 
 const struct c8mpz* to_const_c8mpz(const struct c8obj* o)
 {
-  return (o && o->imp && o->imp == &c8mpz_imp) ?
-    (const struct c8mpz*)o : 0;
+  if (o && o->imp && o->imp == &c8mpz_imp) return (const struct c8mpz*)o;
+  const struct c8num* on = to_const_c8num(o);
+  if (on) return to_const_c8mpz(c8num_const_value(on));
+  return 0;
 }
 
 struct c8mpz* to_c8mpz(struct c8obj* o)

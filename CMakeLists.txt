@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project(calcul8r)
 
 set(C8_VERSION_MAJOR 0)
-set(C8_VERSION_MINOR 2)
+set(C8_VERSION_MINOR 3)
 set(C8_VERSION_PATCH 0)
 
 configure_file("${PROJECT_SOURCE_DIR}/calcul8/c8version.h.in"
@@ -42,6 +42,7 @@ else()
   target_link_libraries(calcul8r
     calcul8
     readline
+    mpc
     mpfr
     gmp)
   
@@ -69,8 +70,10 @@ add_library(calcul8
   calcul8/c8list.c
   calcul8/c8loop.c
   calcul8/c8map.c
+  calcul8/c8mpc.c
   calcul8/c8mpfr.c
   calcul8/c8mpz.c
+  calcul8/c8num.c
   calcul8/c8obj.c
   calcul8/c8ops.c
   calcul8/c8script.c
