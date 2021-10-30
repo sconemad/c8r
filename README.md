@@ -23,8 +23,10 @@
      - __c8map__      Map
      - __c8func__     Function/method
      - __c8sub__      Subroutine
+     - __c8num__      Numeric
      - __c8mpz__      GMP integer
-     - __c8mpfr__     MPFR float
+     - __c8mpfr__     MPFR real number
+     - __c8mpc__      MPC complex number
 
    - __c8buf__        Buffer
    - __c8vec__        Vector
