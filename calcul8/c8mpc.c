@@ -21,7 +21,6 @@
 #include "c8mpc.h"
 #include "c8mpfr.h"
 #include "c8obj.h"
-#include "c8objimp.h"
 #include "c8ops.h"
 #include "c8bool.h"
 #include "c8error.h"
@@ -29,6 +28,8 @@
 #include "c8ctx.h"
 #include "c8list.h"
 #include "c8buf.h"
+#include "c8num.h"
+#include "c8numimp.h"
 
 #include <mpc.h>
 #include <mpfr.h>
@@ -37,7 +38,7 @@
 #include <string.h>
 
 struct c8mpc {
-  struct c8obj base;
+  struct c8num base;
   mpc_t value;
 };
 
@@ -265,7 +266,8 @@ static const struct c8obj_imp c8mpc_imp = {
 
 const struct c8mpc* to_const_c8mpc(const struct c8obj* o)
 {
-  return (o && o->imp && o->imp == &c8mpc_imp) ?
+  const struct c8num* on = to_const_c8num(o);
+  return (on && on->imp && on->imp == &c8mpc_imp) ?
     (const struct c8mpc*)o : 0;
 }
 
@@ -278,8 +280,7 @@ struct c8mpc* c8mpc_create()
 {
   struct c8mpc* oo = (struct c8mpc*)malloc(sizeof(struct c8mpc));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8mpc_imp;
+  c8num_init(&oo->base, &c8mpc_imp);
   mpc_init2(oo->value, 53); // XXX default prec?
   return oo;
 }
@@ -332,26 +333,18 @@ struct c8mpc* c8mpc_create_mpc(const mpc_t value)
   return oo;
 }
 
+static struct c8num* c8mpc_cplx_create(const char* str)
+{
+  return (struct c8num*)c8mpc_create_str(str);
+}
+
 void c8mpc_init_ctx(struct c8ctx* ctx)
 {
   //  mpc_set_default_prec(256);
   
   struct c8mpc* c = c8mpc_create_int(0, 1);
   c8ctx_add(ctx, "i", (struct c8obj*)c);
-/*
-  c8ctx_add(ctx, "log", (struct c8obj*)c8func_create(c8mpc_log));
-  c8ctx_add(ctx, "exp", (struct c8obj*)c8func_create(c8mpc_exp));
-  c8ctx_add(ctx, "sqrt", (struct c8obj*)c8func_create(c8mpc_sqrt));
-  c8ctx_add(ctx, "cos", (struct c8obj*)c8func_create(c8mpc_cos));
-  c8ctx_add(ctx, "sin", (struct c8obj*)c8func_create(c8mpc_sin));
-  c8ctx_add(ctx, "tan", (struct c8obj*)c8func_create(c8mpc_tan));
-  c8ctx_add(ctx, "acos", (struct c8obj*)c8func_create(c8mpc_acos));
-  c8ctx_add(ctx, "asin", (struct c8obj*)c8func_create(c8mpc_asin));
-  c8ctx_add(ctx, "atan", (struct c8obj*)c8func_create(c8mpc_atan));
-  c8ctx_add(ctx, "cosh", (struct c8obj*)c8func_create(c8mpc_cosh));
-  c8ctx_add(ctx, "sinh", (struct c8obj*)c8func_create(c8mpc_sinh));
-  c8ctx_add(ctx, "tanh", (struct c8obj*)c8func_create(c8mpc_tanh));
-*/
+  c8num_register_cplx_create(c8mpc_cplx_create);
 }
 
 static struct c8obj* c8mpc_single_arg(struct c8list* args)

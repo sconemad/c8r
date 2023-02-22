@@ -22,7 +22,7 @@
 #include "c8obj.h"
 #include "c8buf.h"
 #include "c8num.h"
-#include "c8objimp.h"
+#include "c8numimp.h"
 #include "c8ops.h"
 #include "c8bool.h"
 #include "c8list.h"
@@ -39,7 +39,7 @@
 #include <stdio.h>
 
 struct c8mpz {
-  struct c8obj base;
+  struct c8num base;
   mpz_t value;
 };
 
@@ -90,15 +90,6 @@ static void c8mpz_str(const struct c8obj* o, struct c8buf* buf, int f)
   }
 }
 
-static struct c8obj* c8mpz_op_mpfr(struct c8mpz* oo, int op, struct c8obj* p)
-{
-  // Promote to mpfr to perform the op
-  struct c8mpfr* fo = c8mpfr_create_c8obj((struct c8obj*)oo);
-  struct c8obj* r = c8obj_op((struct c8obj*)fo, op, p);
-  c8obj_unref((struct c8obj*)fo);
-  return r;
-}
-
 static struct c8obj* c8mpz_binary_op(struct c8mpz* oo, int op,
                                      struct c8mpz* np)
 {
@@ -124,8 +115,7 @@ static struct c8obj* c8mpz_binary_op(struct c8mpz* oo, int op,
         mpz_tdiv_q(nr->value, oo->value, np->value);
         return (struct c8obj*)nr;
       }
-      // Do non-int divide as mpfr
-      return c8mpz_op_mpfr(oo, op, (struct c8obj*)np);
+      return (struct c8obj*)c8error_create(C8_ERROR_PRECISION_REAL);
     }
     case C8_OP_MODULUS: {
       struct c8mpz* nr = c8mpz_create();
@@ -267,7 +257,8 @@ static struct c8obj* c8mpz_op(struct c8obj* o, int op, struct c8obj* p)
   struct c8mpz* np = to_c8mpz(p);
   if (np) return c8mpz_binary_op(oo, op, np);
 
-  return c8mpz_op_mpfr(oo, op, p);
+  return (struct c8obj*)c8error_create(C8_ERROR_PRECISION_REAL);
+  //  return c8mpz_op_mpfr(oo, op, p);
 }
 
 static const struct c8obj_imp c8mpz_imp = {
@@ -280,10 +271,9 @@ static const struct c8obj_imp c8mpz_imp = {
 
 const struct c8mpz* to_const_c8mpz(const struct c8obj* o)
 {
-  if (o && o->imp && o->imp == &c8mpz_imp) return (const struct c8mpz*)o;
   const struct c8num* on = to_const_c8num(o);
-  if (on) return to_const_c8mpz(c8num_const_value(on));
-  return 0;
+  return (on && on->imp && on->imp == &c8mpz_imp) ?
+    (const struct c8mpz*)o : 0;
 }
 
 struct c8mpz* to_c8mpz(struct c8obj* o)
@@ -293,10 +283,9 @@ struct c8mpz* to_c8mpz(struct c8obj* o)
 
 struct c8mpz* c8mpz_create()
 {
-  struct c8mpz* oo = malloc(sizeof(struct c8mpz));
+  struct c8mpz* oo = (struct c8mpz*)malloc(sizeof(struct c8mpz));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8mpz_imp;
+  c8num_init(&oo->base, &c8mpz_imp);
   mpz_init(oo->value);
   return oo;
 }
@@ -339,12 +328,14 @@ struct c8mpz* c8mpz_create_str(const char* str)
   return oo;
 }
 
+static struct c8num* c8mpz_int_create(const char* str)
+{
+  return (struct c8num*)c8mpz_create_str(str);
+}
+
 void c8mpz_init_ctx(struct c8ctx* ctx)
 {
-  c8ctx_add(ctx, "abs", (struct c8obj*)c8func_create(c8mpz_abs));
-  c8ctx_add(ctx, "gcd", (struct c8obj*)c8func_create(c8mpz_gcd));
-  c8ctx_add(ctx, "lcm", (struct c8obj*)c8func_create(c8mpz_lcm));
-  c8ctx_add(ctx, "fib", (struct c8obj*)c8func_create(c8mpz_fib));
+  c8num_register_int_create(c8mpz_int_create);
 }
 
 struct c8obj* c8mpz_abs(struct c8list* args)

@@ -20,7 +20,6 @@
 
 #include "c8mpfr.h"
 #include "c8obj.h"
-#include "c8objimp.h"
 #include "c8ops.h"
 #include "c8bool.h"
 #include "c8error.h"
@@ -29,6 +28,7 @@
 #include "c8list.h"
 #include "c8buf.h"
 #include "c8num.h"
+#include "c8numimp.h"
 
 #include <mpfr.h>
 #include <assert.h>
@@ -36,7 +36,7 @@
 #include <string.h>
 
 struct c8mpfr {
-  struct c8obj base;
+  struct c8num base;
   mpfr_t value;
 };
 
@@ -289,11 +289,9 @@ static const struct c8obj_imp c8mpfr_imp = {
 
 const struct c8mpfr* to_const_c8mpfr(const struct c8obj* o)
 {
-  if (o && o->imp && o->imp == &c8mpfr_imp) return (const struct c8mpfr*)o;
   const struct c8num* on = to_const_c8num(o);
-  if (on) return to_const_c8mpfr(c8num_const_value(on));
-  return 0;
-
+  return (on && on->imp && on->imp == &c8mpfr_imp) ?
+    (const struct c8mpfr*)o : 0;
 }
 
 struct c8mpfr* to_c8mpfr(struct c8obj* o)
@@ -305,8 +303,7 @@ struct c8mpfr* c8mpfr_create()
 {
   struct c8mpfr* oo = (struct c8mpfr*)malloc(sizeof(struct c8mpfr));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8mpfr_imp;
+  c8num_init(&oo->base, &c8mpfr_imp);
   mpfr_init(oo->value);
   return oo;
 }
@@ -359,10 +356,16 @@ struct c8mpfr* c8mpfr_create_mpfr(const mpfr_t value)
   return oo;
 }
 
+static struct c8num* c8mpfr_real_create(const char* str)
+{
+  return (struct c8num*)c8mpfr_create_str(str);
+}
+
 void c8mpfr_init_ctx(struct c8ctx* ctx)
 {
   //  mpfr_set_default_prec(256);
-  
+  c8num_register_real_create(c8mpfr_real_create);
+
   struct c8mpfr* c = c8mpfr_create();
   mpfr_const_pi(c->value, rnd);
   c8ctx_add(ctx, "PI", (struct c8obj*)c);
@@ -370,26 +373,6 @@ void c8mpfr_init_ctx(struct c8ctx* ctx)
   c = c8mpfr_create_int(1);
   mpfr_exp(c->value, c->value, rnd);
   c8ctx_add(ctx, "e", (struct c8obj*)c);
-/*
-  c8ctx_add(ctx, "abs", (struct c8obj*)c8func_create(c8mpfr_abs));
-  c8ctx_add(ctx, "ceil", (struct c8obj*)c8func_create(c8mpfr_ceil));
-  c8ctx_add(ctx, "floor", (struct c8obj*)c8func_create(c8mpfr_floor));
-  c8ctx_add(ctx, "trunc", (struct c8obj*)c8func_create(c8mpfr_trunc));
-  c8ctx_add(ctx, "log", (struct c8obj*)c8func_create(c8mpfr_log));
-  c8ctx_add(ctx, "exp", (struct c8obj*)c8func_create(c8mpfr_exp));
-  c8ctx_add(ctx, "sqrt", (struct c8obj*)c8func_create(c8mpfr_sqrt));
-  c8ctx_add(ctx, "cos", (struct c8obj*)c8func_create(c8mpfr_cos));
-  c8ctx_add(ctx, "sin", (struct c8obj*)c8func_create(c8mpfr_sin));
-  c8ctx_add(ctx, "tan", (struct c8obj*)c8func_create(c8mpfr_tan));
-  c8ctx_add(ctx, "acos", (struct c8obj*)c8func_create(c8mpfr_acos));
-  c8ctx_add(ctx, "asin", (struct c8obj*)c8func_create(c8mpfr_asin));
-  c8ctx_add(ctx, "atan", (struct c8obj*)c8func_create(c8mpfr_atan));
-  c8ctx_add(ctx, "atan2", (struct c8obj*)c8func_create(c8mpfr_atan2));
-  c8ctx_add(ctx, "cosh", (struct c8obj*)c8func_create(c8mpfr_cosh));
-  c8ctx_add(ctx, "sinh", (struct c8obj*)c8func_create(c8mpfr_sinh));
-  c8ctx_add(ctx, "tanh", (struct c8obj*)c8func_create(c8mpfr_tanh));
-  c8ctx_add(ctx, "mean", (struct c8obj*)c8func_create(c8mpfr_mean));
-*/
 }
 
 static struct c8obj* c8mpfr_single_arg(struct c8list* args)

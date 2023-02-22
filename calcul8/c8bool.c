@@ -121,8 +121,7 @@ struct c8bool* c8bool_create(int value)
 {
   struct c8bool* oo = malloc(sizeof(struct c8bool));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8bool_imp;
+  c8obj_init(&oo->base, &c8bool_imp);
   oo->value = value;
   return oo;
 }

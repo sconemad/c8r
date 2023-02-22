@@ -68,6 +68,10 @@ static void c8error_str(const struct c8obj* o, struct c8buf* buf, int f)
       c8buf_append_str(buf, "bad list initializer"); break;
     case C8_ERROR_PARENTHESIS:
       c8buf_append_str(buf, "mismatched parenthesis"); break;
+    case C8_ERROR_PRECISION_REAL:
+      c8buf_append_str(buf, "precision - real type required"); break;
+    case C8_ERROR_PRECISION_COMPLEX:
+      c8buf_append_str(buf, "precision - complex type required"); break;
     default:
       c8buf_append_str(buf, "unknown"); break;
   }

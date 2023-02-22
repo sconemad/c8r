@@ -78,3 +78,9 @@ void c8obj_debug(int level, const char* name, const struct c8obj* o)
     c8buf_clear(&m);
   }
 }
+
+void c8obj_init(struct c8obj* o, const struct c8obj_imp* imp)
+{
+  o->refs = 1;
+  o->imp = imp;
+}

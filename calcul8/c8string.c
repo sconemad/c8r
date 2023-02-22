@@ -132,8 +132,7 @@ struct c8string* c8string_create()
 {
   struct c8string* oo = malloc(sizeof(struct c8string));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8string_imp;
+  c8obj_init(&oo->base, &c8string_imp);
   c8buf_init(&oo->buf);
   return oo;
 }

@@ -105,8 +105,7 @@ struct c8list* c8list_create()
 {
   struct c8list* oo = malloc(sizeof(struct c8list));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8list_imp;
+  c8obj_init(&oo->base, &c8list_imp);
   c8vec_init(&oo->vec);
   return oo;
 }

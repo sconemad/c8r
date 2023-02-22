@@ -98,8 +98,7 @@ struct c8func* c8func_create(c8func_func f)
   assert(f);
   struct c8func* oo = malloc(sizeof(struct c8func));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8func_imp;
+  c8obj_init(&oo->base, &c8func_imp);
   oo->func = f;
   oo->object = 0;
   return oo;

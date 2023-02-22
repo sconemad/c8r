@@ -32,39 +32,17 @@ struct c8num* to_c8num(struct c8obj* o);
 
 /** Create a c8num object
  */
-struct c8num* c8num_create();
-struct c8num* c8num_create_int(int value);
-struct c8num* c8num_create_double(long double value);
-struct c8num* c8num_create_cplx(long double real, long double imag);
 struct c8num* c8num_create_str(const char* str);
 struct c8num* c8num_parse(const char** c);
-struct c8num* c8num_create_c8obj(const struct c8obj* obj);
-
-const struct c8obj* c8num_const_value(const struct c8num* oo);
-struct c8obj* c8num_value(struct c8num* oo);
 
 /** Add numeric functions to context
  */
 void c8num_init_ctx(struct c8ctx* ctx);
 
-/** Functions
+/** Register implementations 
  */
-struct c8obj* c8num_abs(struct c8list* args);
-struct c8obj* c8num_ceil(struct c8list* args);
-struct c8obj* c8num_floor(struct c8list* args);
-struct c8obj* c8num_trunc(struct c8list* args);
-struct c8obj* c8num_log(struct c8list* args);
-struct c8obj* c8num_exp(struct c8list* args);
-struct c8obj* c8num_pow(struct c8list* args);
-struct c8obj* c8num_sqrt(struct c8list* args);
-struct c8obj* c8num_cos(struct c8list* args);
-struct c8obj* c8num_sin(struct c8list* args);
-struct c8obj* c8num_tan(struct c8list* args);
-struct c8obj* c8num_acos(struct c8list* args);
-struct c8obj* c8num_asin(struct c8list* args);
-struct c8obj* c8num_atan(struct c8list* args);
-struct c8obj* c8num_atan2(struct c8list* args);
-struct c8obj* c8num_cosh(struct c8list* args);
-struct c8obj* c8num_sinh(struct c8list* args);
-struct c8obj* c8num_tanh(struct c8list* args);
-struct c8obj* c8num_mean(struct c8list* args);
+typedef struct c8num* (*c8num_type_create_func)
+(const char* str);
+void c8num_register_int_create(c8num_type_create_func f);
+void c8num_register_real_create(c8num_type_create_func f);
+void c8num_register_cplx_create(c8num_type_create_func f);

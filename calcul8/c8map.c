@@ -125,8 +125,7 @@ struct c8map* c8map_create()
 {
   struct c8map* oo = malloc(sizeof(struct c8map));
   assert(oo);
-  oo->base.refs = 1;
-  oo->base.imp = &c8map_imp;
+  c8obj_init(&oo->base, &c8map_imp);
   c8vec_init(&oo->vec);
   return oo;
 }

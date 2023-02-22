@@ -28,7 +28,8 @@
 #define C8_ERROR_LIST_INIT 3
 #define C8_ERROR_MAP_INIT 4
 #define C8_ERROR_PARENTHESIS 5
-
+#define C8_ERROR_PRECISION_REAL 6
+#define C8_ERROR_PRECISION_COMPLEX 7
 
 struct c8error;
 struct c8obj;

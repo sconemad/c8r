@@ -1,6 +1,6 @@
-/** c8objimp - object implementation
+/** c8numimp - numeric object implementation
  *
- * Copyright (c) 2017 Andrew Wedgbury <wedge@sconemad.com>
+ * Copyright (c) 2021 Andrew Wedgbury <wedge@sconemad.com>
  *
  * This file is part of c8r.
  *
@@ -20,35 +20,11 @@
 
 #pragma once
 
-struct c8buf;
-struct c8obj;
+#include "c8objimp.h"
 
-typedef void (*c8obj_destroy_func)
-(struct c8obj* o);
-
-typedef struct c8obj* (*c8obj_copy_func)
-(const struct c8obj* o);
-
-typedef int (*c8obj_int_func)
-(const struct c8obj* o);
-
-typedef void (*c8obj_str_func)
-(const struct c8obj* o, struct c8buf* buf, int f);
-
-typedef struct c8obj* (*c8obj_op_func)
-(struct c8obj* o, int op, struct c8obj* p);
-
-struct c8obj_imp {
-  c8obj_destroy_func destroy;
-  c8obj_copy_func copy;
-  c8obj_int_func to_int;
-  c8obj_str_func to_str;
-  c8obj_op_func op;
-};
-
-struct c8obj {
-  int refs;
+struct c8num {
+  struct c8obj base;
   const struct c8obj_imp* imp;
 };
 
-void c8obj_init(struct c8obj* o, const struct c8obj_imp* imp);
+void c8num_init(struct c8num* oo, const struct c8obj_imp* imp);
